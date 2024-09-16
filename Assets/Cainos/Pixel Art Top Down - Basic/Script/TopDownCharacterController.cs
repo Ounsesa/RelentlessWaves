@@ -1,169 +1,226 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.InputSystem;
+using UnityEngine.SocialPlatforms;
 
-namespace Cainos.PixelArtTopDown_Basic
+public class TopDownCharacterController : MonoBehaviour
 {
-    public class TopDownCharacterController : MonoBehaviour
+    public Utils.Players m_playerID;
+    public PlayerInput[] m_playerInput;
+
+    public float speed;
+
+    private InputActions _input;
+    private Animator animator;
+
+    [HideInInspector]
+    public GameObject m_interactObject;
+
+    public GameObject bulletGameObject;
+    private Vector2 lookingDirection = new Vector2(1,0);
+
+    public GameObject WeaponGO;
+    public List<GameObject> WeaponList;
+    public int WeaponNumber = 2;
+
+    #region PlayerStats
+    float ShootCadency = 1;
+    #endregion
+
+    private void Start()
     {
-        public Utils.Players m_playerID;
-        public PlayerInput[] m_playerInput;
+        animator = GetComponent<Animator>();
 
-        public float speed;
+        PlayerInput playerInput = GetComponent<PlayerInput>();
+        _input = GameManager.m_instance.m_gameplayManager.m_inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
 
-        private InputActions _input;
-        private Animator animator;
-
-        [HideInInspector]
-        public GameObject m_interactObject;
-
-        public GameObject bulletGameObject;
-        private Vector2 lookingDirection = new Vector2(1,0);
-
-        [Header("MeleeWeapons")]
-        public GameObject[] MeleeWeapons;
-        public Transform RightHand;
-        public GameObject currentMeleeWeaponObject;
-        private int currentMeleeWeapon = 0;
-
-        [Header("RangeWeapons")]
-        public GameObject[] RangeWeapons;
-        public Transform LeftHand;
-        public GameObject currentRangeWeaponObject;
-        private int currentRangeWeapon = 0;
+        InitWeapons();
 
 
-        Dictionary<string, Weapon> weaponsAmmo = new Dictionary<string, Weapon>();
+        Invoke("StartShootCoroutine", ShootCadency);
+    }
 
-        private void Start()
+    private void StartShootCoroutine()
+    {
+        StartCoroutine(ShootCoroutine());
+    }
+
+    private IEnumerator ShootCoroutine()
+    {
+        while (true)
         {
-            animator = GetComponent<Animator>();
-
-            PlayerInput playerInput = GetComponent<PlayerInput>();
-            _input = GameManager.m_instance.m_gameplayManager.m_inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
-
-
-            weaponsAmmo.Add("RangeWeapon1(Clone)", new Weapon(15,3,3));
-            weaponsAmmo.Add("RangeWeapon2(Clone)", new Weapon(50, 10, 10));
-            weaponsAmmo.Add("RangeWeapon3(Clone)", new Weapon(27, 9, 9));
-        }
-
-
-        private void Update()
-        {
-            Movement();
-            Interact();
-            Attack();
-            ChangeWeapon();
-        }
-
-        private void Movement()
-        {   
-
-            Vector2 dir = Vector2.zero;
-            if (_input.m_buttonLeft.IsPressed())
+            for(int i = 0; i < WeaponNumber; i++)
             {
-                dir.x = -1;
+                GameObject bullet = Instantiate(bulletGameObject);
+                bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
+                bullet.GetComponent<Bullet>().Direction = WeaponList[i].transform.right;
+
+                bullet.transform.rotation = WeaponList[i].transform.rotation * Quaternion.Euler(0,0,-90);
+            }
+            yield return new WaitForSeconds(ShootCadency);
+        }
+    }
+
+
+
+    private void Update()
+    {
+        Movement();
+        Aim();
+    }
+
+    private void Aim()
+    {
+        // Get the mouse position in world space
+        Vector3 MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        // Get the player's position
+        Vector3 PlayerPosition = transform.position;
+
+        // Calculate the direction from the player to the mouse
+        Vector3 DirectionToMouse = MouseWorldPosition - PlayerPosition;
+
+        // Calculate the angle between the player and the mouse in degrees
+        float Angle = Mathf.Atan2(DirectionToMouse.y, DirectionToMouse.x) * Mathf.Rad2Deg;
+
+        // Calculate the angle step for each weapon
+        float AngleStep = 360f / WeaponNumber;
+
+        // Define the radius of the circle (same as in the Start function)
+        float radius = 0.3f;
+
+        for (int i = 0; i < WeaponNumber; i++)
+        {
+            // Calculate the angle for this weapon, offset by the player's aim angle
+            float WeaponAngle = Angle + AngleStep * i;
+
+            // Convert the angle to radians
+            float angleInRadians = WeaponAngle * Mathf.Deg2Rad;
+
+            // Calculate the weapon's position on the circle around the player
+            Vector3 weaponPosition = new Vector3(
+                Mathf.Cos(angleInRadians) * radius,
+                Mathf.Sin(angleInRadians) * radius,
+                0);  // Z position remains zero since we're working in 2D
+
+            // Set the weapon's world position relative to the player
+            WeaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
+            WeaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
+
+            // Rotate the weapon itself to face outward
+            WeaponList[i].transform.rotation = Quaternion.Euler(new Vector3(0, 0, WeaponAngle));
+
+            // Flip the player and weapons based on the mouse's position
+            if (Mathf.Abs(Angle) > 90)
+            {
+                // Flip the player (rotate around the y-axis)
                 transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                lookingDirection = new Vector2(-1, 0);
+
+                // Flip the weapon's sprite vertically
+                WeaponList[i].GetComponent<SpriteRenderer>().flipY = true;
             }
-            else if (_input.m_buttonRight.IsPressed())
+            else
             {
-                dir.x = 1;
+                // Reset player's rotation to default
                 transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
-                lookingDirection = new Vector2(1, 0);
-            }
 
-            if (_input.m_buttonUp.IsPressed())
-            {
-                dir.y = 1;
-                lookingDirection = new Vector2(0, 1);
-            }
-            else if (_input.m_buttonDown.IsPressed())
-            {
-                dir.y = -1;
-                lookingDirection = new Vector2(0, -1);
-            }
-
-            dir.Normalize();
-            animator.SetBool("IsMoving", dir.magnitude > 0);
-
-            GetComponent<Rigidbody2D>().velocity = speed * dir;
-
-
-
-        }
-
-        private void Interact()
-        {
-            if (_input.m_buttonInteract.triggered && m_interactObject)
-            {
-                m_interactObject.GetComponent<InteractuableItemWithInput>().Interact();
+                // Reset the weapon's sprite flip
+                WeaponList[i].GetComponent<SpriteRenderer>().flipY = false;
             }
         }
-
-        private void Attack()
-        {
-            
-            if (_input.m_buttonLeftAttack.IsPressed())
-            {
-                LeftHand.GetChild(0).GetComponent<WeaponController>().Shoot(lookingDirection);
-            }
-            
-            
-            if (_input.m_buttonRightAttack.triggered)
-            {
-                
-            }
-        }
-
-        private void ChangeWeapon()
-        {
-            if(_input.m_buttonChangeMeleeWeapon.triggered) 
-            {
-                if(currentMeleeWeaponObject)
-                { 
-                    Destroy(currentMeleeWeaponObject);
-                }
-                currentMeleeWeapon = ++currentMeleeWeapon % MeleeWeapons.Length;
-                currentMeleeWeaponObject = Instantiate(MeleeWeapons[currentMeleeWeapon], RightHand);
-
-                // You might need to adjust the position and rotation of the instantiated weapon
-                currentMeleeWeaponObject.transform.localPosition = new Vector3(-0.25f,0.15f);
-                currentMeleeWeaponObject.transform.localRotation = Quaternion.Euler(0,0,-35);
-
-            }
-            if (_input.m_buttonChangeRangeWeapon.triggered) 
-            {
-                if (currentRangeWeaponObject)
-                {
-                    Destroy(currentRangeWeaponObject);
-                }           
-                currentRangeWeapon = ++currentRangeWeapon % RangeWeapons.Length;
-                currentRangeWeaponObject = Instantiate(RangeWeapons[currentRangeWeapon], LeftHand);
-                currentRangeWeaponObject.GetComponent<WeaponController>().Init(weaponsAmmo[currentRangeWeaponObject.name], LayerMask.LayerToName(gameObject.layer), gameObject.GetComponent<SpriteRenderer>().sortingLayerName);
-            }
-        }
-
-        
     }
-}
 
-public class Weapon
-{
-    public int maxAmmo = 1;
-    public int currentAmmo = 1;
-    public int chargerAmmo = 1;
 
-    public Weapon(int _maxAmmo, int _chargerAmmo, int _currentAmmo)
+    private void Movement()
+    {   
+        Vector2 dir = Vector2.zero;
+        if (_input.m_buttonLeft.IsPressed())
+        {
+            dir.x = -1;
+            lookingDirection = new Vector2(-1, 0);
+        }
+        else if (_input.m_buttonRight.IsPressed())
+        {
+            dir.x = 1;
+            lookingDirection = new Vector2(1, 0);
+        }
+
+        if (_input.m_buttonUp.IsPressed())
+        {
+            dir.y = 1;
+        }
+        else if (_input.m_buttonDown.IsPressed())
+        {
+            dir.y = -1;
+        }
+
+        dir.Normalize();
+        animator.SetBool("IsMoving", dir.magnitude > 0);
+
+        GetComponent<Rigidbody2D>().velocity = speed * dir;
+
+
+
+    }
+
+    private void InitWeapons()
     {
-        maxAmmo = _maxAmmo;
-        chargerAmmo = _chargerAmmo;
-        currentAmmo = _currentAmmo;
+
+        WeaponGO.SetActive(true);
+        float radius = 0.3f;  // Radius of the circle around the player
+        float AngleStep = 360f / WeaponNumber;  // Angle step for each weapon
+
+        for (int i = 0; i < WeaponNumber; i++)
+        {
+            // Calculate the angle for this weapon
+            float WeaponAngle = AngleStep * i;
+
+            // Convert angle to radians because Unity uses radians for trigonometric functions
+            float angleInRadians = WeaponAngle * Mathf.Deg2Rad;
+
+            // Calculate the position on the circle (polar coordinates to Cartesian)
+            Vector3 weaponPosition = new Vector3(
+                Mathf.Cos(angleInRadians) * radius,  // X position (cosine of the angle)
+                Mathf.Sin(angleInRadians) * radius,  // Y position (sine of the angle)
+                0);  // Z position remains zero since we're rotating in 2D
+
+            // Instantiate the weapon
+            GameObject NewWeapon = Instantiate(WeaponGO, transform);
+
+            // Set the position in world space, relative to the player's position
+            NewWeapon.transform.position = transform.position + weaponPosition + Vector3.up * radius;
+
+            // Add the new weapon to the list
+            WeaponList.Add(NewWeapon);
+        }
+
+        // Deactivate the original weapon object
+        WeaponGO.SetActive(false);
+
     }
+
+    public void AddWeapon()
+    {
+
+        for (int i = 0;i < WeaponNumber;i++) 
+        {
+            Destroy(WeaponList[i]);
+        }
+        WeaponList.Clear();
+
+        WeaponNumber++;
+
+        InitWeapons();
+
+    }
+
 }
+
 
 
 
