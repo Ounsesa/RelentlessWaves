@@ -13,7 +13,6 @@ public class TopDownCharacterController : MonoBehaviour
     public Utils.Players m_playerID;
     public PlayerInput[] m_playerInput;
 
-    public float speed;
 
     private InputActions _input;
     private Animator animator;
@@ -29,6 +28,7 @@ public class TopDownCharacterController : MonoBehaviour
     public int WeaponNumber = 2;
 
     #region PlayerStats
+    public float speed;
     float ShootCadency = 1;
     #endregion
 

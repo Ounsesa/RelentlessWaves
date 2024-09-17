@@ -10,6 +10,7 @@ public class EnemyController : MonoBehaviour
     public float speed = 0.005f;
     Animator animator;
     BoxCollider2D boxCollider;
+    EnemyTypes EnemyType;
 
     private bool Dead = false;
 
@@ -34,6 +35,11 @@ public class EnemyController : MonoBehaviour
         
     }
 
+    public void Init(EnemyTypes enemyType)
+    {
+        EnemyType = enemyType;
+        gameObject.SetActive(false);
+    }
 
     public void TakeDamage(float damage)
     {
@@ -45,8 +51,22 @@ public class EnemyController : MonoBehaviour
             Dead = true;
             animator.SetBool("Dead", true);
             boxCollider.enabled = false;
-            Destroy(gameObject, 2);
+
+            Invoke("RegisterDead", 2);
+
         }
     }
 
+    public void Respawn()
+    {
+        gameObject.SetActive(true);
+        health = 1;
+        Dead = false;
+        GetComponent<BoxCollider2D>().enabled = true;
+    }
+
+    private void RegisterDead()
+    {
+        SpawnerController.m_instance.RegisterDead(EnemyType, gameObject);
+    }
 }
