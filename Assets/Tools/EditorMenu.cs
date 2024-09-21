@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class EditorMenu : MonoBehaviour
 {
-    [MenuItem("Tools/PowerUp Data Window")]
+    [MenuItem("Tools/Data Window")]
     public static void OpenPowerUpDataWindow()
     {
         PowerUpDataWindow.InitWindow();

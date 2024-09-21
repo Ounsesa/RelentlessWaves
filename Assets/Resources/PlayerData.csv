@@ -1,0 +1,13 @@
+Stat;InitialValue
+Weapons;1
+Speed;4
+ShootCadency;1,5
+Damage;1
+DamageMultiplier;1
+Range;1
+BulletSpeed;5
+Size;1
+Follower;0
+Explodes;0
+Piercing;0
+AreaDamage;0

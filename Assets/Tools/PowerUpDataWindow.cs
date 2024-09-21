@@ -14,16 +14,22 @@ enum CSVWindow
 public class PowerUpDataWindow : EditorWindow
 {
     static PowerUpDataWindow window;
-    private static string DataFileName = "PowerUpData";
+    private static string PowerUpDataFileName = "PowerUpData";
+    private static string PlayerDataFileName = "PlayerData";
+    private static string EnemiesDataFileName = "EnemiesData";
     static List<PowerUpValues> PowerUpValues = new List<PowerUpValues>();
+    static List<string[]> PlayerValues = new List<string[]>();
+    static List<string[]> EnemyValues = new List<string[]>();
     private CSVWindow CSVWindow = CSVWindow.PlayerStats;
     
     public static void InitWindow()
     {
-        window = EditorWindow.GetWindow<PowerUpDataWindow>("PowerUpData");
+        window = EditorWindow.GetWindow<PowerUpDataWindow>("DataWindow");
         window.Show();
 
-        CSVParser.ParseStringListToPowerUpValuesList(DataFileName, out PowerUpValues);
+        CSVParser.ParseStringListToPowerUpValuesList(PowerUpDataFileName, out PowerUpValues);
+        PlayerValues = CSVParser.ParseCSVToStringList(PlayerDataFileName);
+        EnemyValues = CSVParser.ParseCSVToStringList(EnemiesDataFileName);
     }
 
     private void OnGUI()
@@ -55,23 +61,90 @@ public class PowerUpDataWindow : EditorWindow
 
         if (GUILayout.Button("Save Data"))
         {
-            CSVParser.ParsePowerUpListToCSV(DataFileName, PowerUpValues);
+            switch (CSVWindow)
+            {
+                case CSVWindow.PlayerStats:
+                    ShowPlayerStats(); break;
+                case CSVWindow.EnemyStats:
+                    ShowEnemyStats(); break;
+                case CSVWindow.PowerUpStats:
+                    CSVParser.ParsePowerUpListToCSV(PowerUpDataFileName, PowerUpValues);
+                    break;
+            }
+
         }
     }
 
     private void ShowPlayerStats()
     {
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.TextArea("Stat");
+        EditorGUILayout.TextArea("Value");
+        EditorGUILayout.EndHorizontal();
+        for (int i = 1; i < PlayerValues.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.TextField(PlayerValues[i][0]);
+            string newValue = EditorGUILayout.TextField(PlayerValues[i][1]);
 
+            float newValueFloat;
+            if (!(float.TryParse(newValue, out newValueFloat)))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+        EditorGUILayout.EndVertical();
     }
 
     private void ShowEnemyStats()
     {
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.TextArea("EnemyId");
+        EditorGUILayout.TextArea("Health");
+        EditorGUILayout.TextArea("Damage");
+        EditorGUILayout.TextArea("Speed");
+        EditorGUILayout.EndHorizontal();
+        for (int i = 1; i < EnemyValues.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.TextField(EnemyValues[i][0]);
+            string newHealth = EditorGUILayout.TextField(EnemyValues[i][1]);
+            string newDamage = EditorGUILayout.TextField(EnemyValues[i][2]);
+            string newSpeed = EditorGUILayout.TextField(EnemyValues[i][3]);
 
+            float newHealthFloat;
+            if (!(float.TryParse(newHealth, out newHealthFloat)))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+            }
+            float newDamageFloat;
+            if (!(float.TryParse(newDamage, out newDamageFloat)))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+            }
+            float newSpeedFloat;
+            if (!(float.TryParse(newSpeed, out newSpeedFloat)))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+        EditorGUILayout.EndVertical();
     }
 
     private void ShowPowerUpStats()
     {
         EditorGUILayout.BeginVertical();
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.TextArea("Power Up");
+        EditorGUILayout.TextArea("Amount");
+        EditorGUILayout.TextArea("Duration");
+        EditorGUILayout.EndHorizontal();
         for (int i = 0; i < PowerUpValues.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();

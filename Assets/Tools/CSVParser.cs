@@ -110,7 +110,8 @@ public class CSVParser : MonoBehaviour
         string directory = Path.GetDirectoryName(filePath);
         if (!Directory.Exists(directory))
         {
-            Directory.CreateDirectory(directory);
+            Debug.Log($"Not found directory {filePath}");
+            return;
         }
 
         // Create a stream writer to write to the CSV file
@@ -130,5 +131,37 @@ public class CSVParser : MonoBehaviour
         Debug.Log($"PowerUp data successfully written to {filePath}");
     }
 
+    public static void ParseStringListToCSV(string resourceName, List<string[]> stringList)
+    { 
+        //Construct the full file path in a writable directory like Application.persistentDataPath
+        string filePath = "Assets/Resources/" + resourceName + ".csv";
+
+        // Ensure the directory exists
+        string directory = Path.GetDirectoryName(filePath);
+        if (!Directory.Exists(directory))
+        {
+            Debug.Log($"Not found directory {filePath}");
+            return;
+        }
+
+        // Create a stream writer to write to the CSV file
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            string line = "";
+            // Write each PowerUpValues entry as a line in the CSV file
+            foreach (string[] stringRow in stringList)
+            {
+                foreach(string stringValue in stringRow)
+                {
+                    line += stringValue + ";";
+                }
+                line.Remove(line.Length - 1);
+                writer.WriteLine(line);
+            }
+        }
+
+        Debug.Log($"PowerUp data successfully written to {filePath}");
+
+    }
 
 }
