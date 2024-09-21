@@ -17,20 +17,25 @@ public class TopDownCharacterController : MonoBehaviour
     private InputActions _input;
     private Animator animator;
 
+    [SerializeField]
+    private StatsGrid statsGrid;
+
     [HideInInspector]
     public GameObject m_interactObject;
 
     public GameObject bulletGameObject;
-    private Vector2 lookingDirection = new Vector2(1,0);
+    private Vector2 lookingDirection = new Vector2(1, 0);
 
     public GameObject WeaponGO;
     public List<GameObject> WeaponList;
     public int WeaponNumber = 2;
 
     #region PlayerStats
-    public float speed;
-    float ShootCadency = 1;
+    public float speed = 4;
+    public float ShootCadency = 1;
+
     #endregion
+
 
     private void Start()
     {
@@ -40,9 +45,28 @@ public class TopDownCharacterController : MonoBehaviour
         _input = GameManager.m_instance.m_gameplayManager.m_inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
 
         InitWeapons();
+        BindDelegates();
+
+        statsGrid.InitGrid();
 
 
         Invoke("StartShootCoroutine", ShootCadency);
+    }
+
+    private void BindDelegates()
+    {
+        PowerUpController.m_instance.OnSpeedPicked += AddSpeed;
+        PowerUpController.m_instance.OnSizePicked += AddBulletSize;
+        PowerUpController.m_instance.OnExplosionPicked += SetExplosion;
+        PowerUpController.m_instance.OnFollowerPicked += SetFollower;
+        PowerUpController.m_instance.OnDamagePicked += AddDamage;
+        PowerUpController.m_instance.OnDamageMultiplierPicked += AddDamageMultiplier;
+        PowerUpController.m_instance.OnBulletSpeedPicked += AddBulletSpeed;
+        PowerUpController.m_instance.OnAreaDamagePicked += SetAreaDamage;
+        PowerUpController.m_instance.OnNewWeaponPicked += AddWeapon;
+        PowerUpController.m_instance.OnShootCadencyPicked += ReduceShootCadency;
+        PowerUpController.m_instance.OnPiercingPicked += SetPiercing;
+        PowerUpController.m_instance.OnRangePicked += AddRange;
     }
 
     private void StartShootCoroutine()
@@ -54,13 +78,13 @@ public class TopDownCharacterController : MonoBehaviour
     {
         while (true)
         {
-            for(int i = 0; i < WeaponNumber; i++)
+            for (int i = 0; i < WeaponNumber; i++)
             {
                 GameObject bullet = Instantiate(bulletGameObject);
                 bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
                 bullet.GetComponent<Bullet>().Direction = WeaponList[i].transform.right;
 
-                bullet.transform.rotation = WeaponList[i].transform.rotation * Quaternion.Euler(0,0,-90);
+                bullet.transform.rotation = WeaponList[i].transform.rotation * Quaternion.Euler(0, 0, -90);
             }
             yield return new WaitForSeconds(ShootCadency);
         }
@@ -137,7 +161,7 @@ public class TopDownCharacterController : MonoBehaviour
 
 
     private void Movement()
-    {   
+    {
         Vector2 dir = Vector2.zero;
         if (_input.m_buttonLeft.IsPressed())
         {
@@ -204,20 +228,84 @@ public class TopDownCharacterController : MonoBehaviour
 
     }
 
-    public void AddWeapon()
+    #region PowerUps
+    public void AddWeapon(bool Add)
     {
 
-        for (int i = 0;i < WeaponNumber;i++) 
+        for (int i = 0; i < WeaponNumber; i++)
         {
             Destroy(WeaponList[i]);
         }
         WeaponList.Clear();
-
-        WeaponNumber++;
+        if(Add)
+        {
+            WeaponNumber++;
+        }
+        else 
+        {
+            WeaponNumber--;
+        }
 
         InitWeapons();
-
     }
+
+    public void AddSpeed(float amount)
+    {
+        speed += amount;
+    }
+
+    public void ReduceShootCadency(float amount)
+    {
+        ShootCadency -= amount;
+    }
+
+    public void AddDamage(float amount)
+    {
+        bulletGameObject.GetComponent<Bullet>().Damage += amount;
+    }
+
+    public void AddDamageMultiplier(float amount)
+    {
+        bulletGameObject.GetComponent<Bullet>().DamageMultiplier += amount;
+    }
+
+    public void AddRange(float amount)
+    {
+        bulletGameObject.GetComponent<Bullet>().Range += amount;
+    }
+
+    public void AddBulletSpeed(float amount)
+    {
+        bulletGameObject.GetComponent<Bullet>().Speed += amount;
+    }
+
+    public void AddBulletSize(float amount)
+    {
+        bulletGameObject.GetComponent<Bullet>().Size += amount;
+    }
+
+    public void SetFollower(bool Follower)
+    {
+        bulletGameObject.GetComponent<Bullet>().Follower = Follower;
+    }
+
+    public void SetExplosion(bool Explosion)
+    {
+        bulletGameObject.GetComponent<Bullet>().ExplodesOnHit = Explosion;
+    }
+
+    public void SetPiercing(bool Piercing)
+    {
+        bulletGameObject.GetComponent<Bullet>().Piercing = Piercing;
+    }
+
+    public void SetAreaDamage(bool AreaDamage)
+    {
+        bulletGameObject.GetComponent<Bullet>().AreaDamage = AreaDamage;
+    } 
+
+
+    #endregion
 
 }
 

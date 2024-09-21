@@ -118,7 +118,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -147,3 +147,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Direction: {x: 0, y: 0}
+  Damage: 5
+  DamageMultiplier: 1
+  Range: 5
+  Speed: 10
+  Size: 1
+  Follower: 0
+  ExplodesOnHit: 0
+  Piercing: 0
+  AreaDamage: 0

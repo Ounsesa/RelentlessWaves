@@ -40,9 +40,6 @@ public class SpawnerController : MonoBehaviour
     [SerializeField]
     private float SpawnTime = 1;
 
-
-    public event System.Action OnEnemyDead;
-
     public static SpawnerController m_instance;
     void Awake()
     {
