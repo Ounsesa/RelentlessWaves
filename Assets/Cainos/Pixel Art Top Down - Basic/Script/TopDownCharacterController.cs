@@ -20,6 +20,9 @@ public class TopDownCharacterController : MonoBehaviour
     [SerializeField]
     private StatsGrid statsGrid;
 
+    [SerializeField]
+    private string PlayerDataFileName = "PlayerData";
+
     [HideInInspector]
     public GameObject m_interactObject;
 
@@ -39,6 +42,8 @@ public class TopDownCharacterController : MonoBehaviour
 
     private void Start()
     {
+        InitPlayer();
+
         animator = GetComponent<Animator>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
@@ -51,6 +56,66 @@ public class TopDownCharacterController : MonoBehaviour
 
 
         Invoke("StartShootCoroutine", ShootCadency);
+    }
+
+    private void InitPlayer()
+    {
+        List<string[]> PlayerData = CSVParser.ParseCSVToStringList(PlayerDataFileName);
+        PlayerData.RemoveAt(0);
+        int index = 0;
+        foreach (string[] PlayerDataLine in PlayerData)
+        {
+            int outInt = -1;
+            switch (index)
+            {
+                case 0:
+                    WeaponNumber = int.Parse(PlayerDataLine[1]);
+                    break;
+                case 1:
+                    speed = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 2:
+                    ShootCadency = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 3:
+                    bulletGameObject.GetComponent<Bullet>().Damage = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 4:
+                    bulletGameObject.GetComponent<Bullet>().DamageMultiplier = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 5:
+                    bulletGameObject.GetComponent<Bullet>().Range = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 6:
+                    bulletGameObject.GetComponent<Bullet>().Speed = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 7:
+                    bulletGameObject.GetComponent<Bullet>().Size = float.Parse(PlayerDataLine[1]);
+                    break;
+                case 8:
+                    outInt = -1;
+                    int.TryParse(PlayerDataLine[1], out outInt);
+                    bulletGameObject.GetComponent<Bullet>().Follower = outInt == 1 ? true : false;
+                    break;
+                case 9:
+                    outInt = -1;
+                    int.TryParse(PlayerDataLine[1], out outInt);
+                    bulletGameObject.GetComponent<Bullet>().ExplodesOnHit = outInt == 1 ? true : false;
+                    break;
+                case 10:
+                    outInt = -1;
+                    int.TryParse(PlayerDataLine[1], out outInt);
+                    bulletGameObject.GetComponent<Bullet>().Piercing = outInt == 1 ? true : false;
+                    break;
+                case 11:
+                    outInt = -1;
+                    int.TryParse(PlayerDataLine[1], out outInt);
+                    bulletGameObject.GetComponent<Bullet>().AreaDamage = outInt == 1 ? true : false;
+                    break;
+            }
+
+            index++;
+        }
     }
 
     private void BindDelegates()

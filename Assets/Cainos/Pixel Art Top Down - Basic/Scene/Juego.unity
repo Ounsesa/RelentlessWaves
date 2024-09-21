@@ -38664,6 +38664,13 @@ MonoBehaviour:
     enemyPrefab: {fileID: 1456159498948521090, guid: 4e16c14b3be454e4a8407d1b9bdecee8,
       type: 3}
     enemyAmount: 50
+  enemyPrefabs:
+  - {fileID: 7459741254527686843, guid: dfb0a9c34a5688747957b925f27782ab, type: 3}
+  - {fileID: 1589373376124550589, guid: 462b5b43557708b468f132b2f803707a, type: 3}
+  - {fileID: 4379879685130476044, guid: 42d863a452749fe41b9f13d87edf50f3, type: 3}
+  - {fileID: 5814403544389429506, guid: bf15209b306dfe94cb8e2193c593bfbd, type: 3}
+  - {fileID: 1456159498948521090, guid: 4e16c14b3be454e4a8407d1b9bdecee8, type: 3}
+  EnemiesDataFileName: EnemiesData
   SpawnTime: 1
 --- !u!4 &1569078853
 Transform:

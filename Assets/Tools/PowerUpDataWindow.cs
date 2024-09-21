@@ -64,9 +64,9 @@ public class PowerUpDataWindow : EditorWindow
             switch (CSVWindow)
             {
                 case CSVWindow.PlayerStats:
-                    ShowPlayerStats(); break;
+                    CSVParser.ParseStringListToCSV(PlayerDataFileName, PlayerValues); break;
                 case CSVWindow.EnemyStats:
-                    ShowEnemyStats(); break;
+                    CSVParser.ParseStringListToCSV(EnemiesDataFileName, EnemyValues); break;
                 case CSVWindow.PowerUpStats:
                     CSVParser.ParsePowerUpListToCSV(PowerUpDataFileName, PowerUpValues);
                     break;
@@ -91,8 +91,9 @@ public class PowerUpDataWindow : EditorWindow
             float newValueFloat;
             if (!(float.TryParse(newValue, out newValueFloat)))
             {
-                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+                //EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
             }
+            PlayerValues[i][1] = newValue;
 
             EditorGUILayout.EndHorizontal();
         }
@@ -107,6 +108,7 @@ public class PowerUpDataWindow : EditorWindow
         EditorGUILayout.TextArea("Health");
         EditorGUILayout.TextArea("Damage");
         EditorGUILayout.TextArea("Speed");
+        EditorGUILayout.TextArea("Amount");
         EditorGUILayout.EndHorizontal();
         for (int i = 1; i < EnemyValues.Count; i++)
         {
@@ -115,22 +117,33 @@ public class PowerUpDataWindow : EditorWindow
             string newHealth = EditorGUILayout.TextField(EnemyValues[i][1]);
             string newDamage = EditorGUILayout.TextField(EnemyValues[i][2]);
             string newSpeed = EditorGUILayout.TextField(EnemyValues[i][3]);
+            string newAmount = EditorGUILayout.TextField(EnemyValues[i][4]);
 
             float newHealthFloat;
             if (!(float.TryParse(newHealth, out newHealthFloat)))
             {
                 EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
             }
+            EnemyValues[i][1] = newHealth;
             float newDamageFloat;
             if (!(float.TryParse(newDamage, out newDamageFloat)))
             {
                 EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
             }
+            EnemyValues[i][2] = newDamage;
             float newSpeedFloat;
             if (!(float.TryParse(newSpeed, out newSpeedFloat)))
             {
                 EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
             }
+            EnemyValues[i][3] = newSpeed;
+
+            int newAmountInt;
+            if (!(int.TryParse(newAmount, out newAmountInt)))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
+            }
+            EnemyValues[i][4] = newAmount;
 
             EditorGUILayout.EndHorizontal();
         }

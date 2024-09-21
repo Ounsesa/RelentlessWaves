@@ -6,8 +6,10 @@ using UnityEngine;
 public class EnemyController : MonoBehaviour
 {
     public float health = 1;
+    private float InitialHealth = 1;
     private GameObject player;
     public float speed = 0.005f;
+    public float damage = 1;
     Animator animator;
     BoxCollider2D boxCollider;
     EnemyTypes EnemyType;
@@ -35,14 +37,18 @@ public class EnemyController : MonoBehaviour
         
     }
 
-    public void Init(EnemyTypes enemyType)
+    public void Init(EnemyTypes enemyType, float _health, float _damage, float _speed)
     {
         EnemyType = enemyType;
+        speed = _speed;
+        InitialHealth = _health;
+        damage = _damage;
         gameObject.SetActive(false);
     }
 
     public void TakeDamage(float damage)
     {
+        Debug.Log(health.ToString() + "\t" + damage.ToString());
         health -= damage;
         animator.SetTrigger("Hit");
 
@@ -60,7 +66,7 @@ public class EnemyController : MonoBehaviour
     public void Respawn()
     {
         gameObject.SetActive(true);
-        health = 1;
+        health = InitialHealth;
         Dead = false;
         GetComponent<BoxCollider2D>().enabled = true;
     }

@@ -31,8 +31,11 @@ public class EnemyTypeEntry
 
 public class SpawnerController : MonoBehaviour
 {
-    [SerializeField]
     public List<EnemyTypeEntry> EnemyEntries;
+    public List<GameObject> enemyPrefabs;
+
+    [SerializeField]
+    private string EnemiesDataFileName = "EnemiesData";
 
     public Dictionary<EnemyTypes, List<GameObject>> AliveEnemyPool = new Dictionary<EnemyTypes, List<GameObject>>();
     public Dictionary<EnemyTypes, List<GameObject>> DeadEnemyPool = new Dictionary<EnemyTypes, List<GameObject>>();
@@ -61,16 +64,24 @@ public class SpawnerController : MonoBehaviour
 
     private void CreateEnemies()
     {
-        foreach(EnemyTypeEntry entry in EnemyEntries)
+        List<string[]> EnemiesListData = CSVParser.ParseCSVToStringList(EnemiesDataFileName);
+        EnemiesListData.RemoveAt(0);
+        foreach(string[] entry in EnemiesListData)
         {
-            DeadEnemyPool[entry.enemyType] = new List<GameObject>();
-            AliveEnemyPool[entry.enemyType] = new List<GameObject>();
-            for (int i = 0; i < entry.enemyAmount; i++) 
-            {
-                GameObject NewEnemy = Instantiate(entry.enemyPrefab);
-                DeadEnemyPool[entry.enemyType].Add(NewEnemy);
+            int EnemyIndex = int.Parse(entry[0]);
 
-                NewEnemy.GetComponent<EnemyController>().Init(entry.enemyType);
+            EnemyTypes EnemyType = (EnemyTypes)EnemyIndex;
+
+            DeadEnemyPool[EnemyType] = new List<GameObject>();
+            AliveEnemyPool[EnemyType] = new List<GameObject>();
+
+            int EnemyAmount = int.Parse(entry[4]);
+            for (int i = 0; i < EnemyAmount; i++) 
+            {
+                GameObject NewEnemy = Instantiate(enemyPrefabs[EnemyIndex]);
+                DeadEnemyPool[EnemyType].Add(NewEnemy);
+
+                NewEnemy.GetComponent<EnemyController>().Init(EnemyType, float.Parse(entry[1]), float.Parse(entry[2]), float.Parse(entry[3]));
             }
         }
     }

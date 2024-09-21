@@ -147,15 +147,15 @@ public class CSVParser : MonoBehaviour
         // Create a stream writer to write to the CSV file
         using (StreamWriter writer = new StreamWriter(filePath))
         {
-            string line = "";
             // Write each PowerUpValues entry as a line in the CSV file
             foreach (string[] stringRow in stringList)
             {
-                foreach(string stringValue in stringRow)
+                string line = "";
+                foreach (string stringValue in stringRow)
                 {
                     line += stringValue + ";";
                 }
-                line.Remove(line.Length - 1);
+                line = line.Remove(line.Length - 1);
                 writer.WriteLine(line);
             }
         }
