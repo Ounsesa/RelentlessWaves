@@ -5530,6 +5530,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 238900577}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &252029961 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3340141887037882767, guid: a9e86e7fe7eb932469770ffa00497b65,
+    type: 3}
+  m_PrefabInstance: {fileID: 1424008909}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &257329672
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23330,6 +23336,7 @@ MonoBehaviour:
   m_playerID: 0
   m_playerInput: []
   statsGrid: {fileID: 815975747}
+  PlayerDataFileName: PlayerData
   m_interactObject: {fileID: 0}
   bulletGameObject: {fileID: 1645835655}
   WeaponGO: {fileID: 1171299392}
@@ -37011,6 +37018,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SortingOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3410536300139400989, guid: a9e86e7fe7eb932469770ffa00497b65,
+        type: 3}
+      propertyPath: HitTrigger
+      value: 
+      objectReference: {fileID: 252029961}
+    - target: {fileID: 3410536300139400989, guid: a9e86e7fe7eb932469770ffa00497b65,
+        type: 3}
+      propertyPath: ExplosionArea
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3410536300139400989, guid: a9e86e7fe7eb932469770ffa00497b65,
+        type: 3}
+      propertyPath: InitialBullet
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5704118748775656325, guid: a9e86e7fe7eb932469770ffa00497b65,
         type: 3}

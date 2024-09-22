@@ -18,43 +18,124 @@ public class Bullet : MonoBehaviour
     #endregion
 
     #region CrazyStats
-    public bool Follower = false;
-    float FollowerSizeDetection = 10;
 
-    public bool ExplodesOnHit = false;
-    float ExplosionArea = 10;
 
     public bool Piercing = false;
 
-    public bool AreaDamage = false;
-    float AreaSize = 10;
     #endregion
 
 
-    Vector3 InitialPosition;
+
+    [SerializeField]
+    private GameObject HitTrigger;
+
+    private float DistanceTravelled = 0;
+
+    #region Follower
+    public bool Follower = false;
+    private GameObject closestEnemy;
+    [SerializeField]
+    float FollowerSizeDetection = 2;
+    [SerializeField]
+    private GameObject FollowerTrigger;
+    #endregion
+
+    #region Explosion
+    [SerializeField]
+    private GameObject ExplosionTrigger;
+    private List<GameObject> EnemiesInExplosionTrigger = new List<GameObject>();
+
+    public bool ExplodesOnHit = false;
+    [SerializeField]
+    float ExplosionArea = 10;
+
+    [SerializeField]
+    float ExplosionDamage = 5;
+    #endregion
+
+    #region AreaDamage
+    [SerializeField]
+    private GameObject AreaDamageTrigger;
+
+    public bool AreaDamage = false;
+    [SerializeField]
+    float AreaSize = 2;
+    [SerializeField]
+    float TimeBetweenDamages = 0.5f;
+    [SerializeField]
+    float AreaDamageAmount = 1f;
+    private List<GameObject> EnemiesInAreaDamageTrigger = new List<GameObject>();
+    #endregion
+
+
+
 
 
 
     // Start is called before the first frame update
     void Start()
     {
+        if (gameObject.name == "Bullet")
+        {
+            return;
+        }
         transform.localScale = Vector3.one * Size;
-        InitialPosition = transform.position;
+
+        InitTriggers();
+
+        if (AreaDamage)
+        {
+            StartCoroutine(DealAreaDamage());
+        }
+    }
+
+    private void InitTriggers()
+    {
+        FollowerTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += FollowerTriggerEntered;
+        FollowerTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += FollowerTriggerExited;
+        FollowerTrigger.GetComponent<CircleCollider2D>().radius = FollowerSizeDetection;
+
+        ExplosionTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += ExplosionTriggerEntered;
+        ExplosionTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += ExplosionTriggerExited;
+        ExplosionTrigger.GetComponent<CircleCollider2D>().radius = ExplosionArea;
+
+        AreaDamageTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += AreaDamageTriggerEntered;
+        AreaDamageTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += AreaDamageTriggerExited;
+        AreaDamageTrigger.GetComponent<CircleCollider2D>().radius = AreaSize;
+
+        HitTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += HitTriggerEnter;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        if(Vector3.Distance(InitialPosition, transform.position) >= Range)
+        if (gameObject.name == "Bullet")
         {
-            Destroy(gameObject);
+            return;
+        }
+
+        if (DistanceTravelled >= Range)
+        {
+            EndBullet();
         }
         else
         {
             BulletMovement();
+
+            
         }
 
+
+    }
+
+    private void EndBullet()
+    {
+        if (ExplodesOnHit)
+        {
+            DealExplosionDamage();
+        }
+        Destroy(gameObject);
     }
 
     private void BulletMovement()
@@ -65,15 +146,27 @@ public class Bullet : MonoBehaviour
         }
 
         GetComponent<Rigidbody2D>().velocity = Speed * Direction;
+        DistanceTravelled += Speed * Time.deltaTime;
+
+        float angle = Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90));  // Adjust angle to match bullet sprite orientation
     }
 
 
     private void TargetNearbyEnemy()
     {
+        if(closestEnemy == null)
+        {
+            return;
+        }
 
+        Vector3 EnemyDirection = closestEnemy.transform.position - transform.position;
+
+        Vector3 NewDirection = Vector3.RotateTowards(Direction, EnemyDirection, 5 * Time.deltaTime, Time.deltaTime);
+        Direction = NewDirection;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void HitTriggerEnter(Collider2D collision)
     {
         if (collision.gameObject.tag == "Enemy")
         {
@@ -81,11 +174,100 @@ public class Bullet : MonoBehaviour
         }
         if(!Piercing)
         {
-            Destroy(gameObject);
+            EndBullet();
         }
         else if(collision.gameObject.tag != "Enemy")
         {
-            Destroy(gameObject);
+            EndBullet();
+        }
+    }
+
+    private void DealExplosionDamage()
+    {
+        for(int i = 0; i < EnemiesInExplosionTrigger.Count; i++)
+        {
+            EnemiesInExplosionTrigger[i].GetComponent<EnemyController>().TakeDamage(ExplosionDamage * DamageMultiplier);
+        }
+    }
+    private IEnumerator DealAreaDamage()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(TimeBetweenDamages);
+            for (int i = 0; i < EnemiesInAreaDamageTrigger.Count; i++)
+            {
+                EnemiesInAreaDamageTrigger[i].GetComponent<EnemyController>().TakeDamage(AreaDamageAmount * DamageMultiplier);
+            }
+        }
+    }
+
+    private void FollowerTriggerEntered(Collider2D collision)
+    {
+        if(collision.gameObject.tag != "Enemy")
+        {
+            return;
+        }
+
+        Vector3 EnemyDirection = collision.gameObject.transform.position - transform.position;
+        if(Vector3.Angle(Direction, EnemyDirection) > 80)
+        {
+            return;
+        }
+
+        if(closestEnemy == null)
+        {
+            closestEnemy = collision.gameObject;
+            return;
+        }
+        if(Vector3.Distance(transform.position, collision.transform.position) < Vector3.Distance(transform.position, closestEnemy.transform.position))
+        {
+            closestEnemy = collision.gameObject; 
+            return;
+        }
+        
+    }
+
+    private void FollowerTriggerExited(Collider2D collision)
+    {
+        if(collision.gameObject == closestEnemy) 
+        {
+            closestEnemy = null;
+        }
+    }
+    private void ExplosionTriggerEntered(Collider2D collision)
+    {
+        if(collision.gameObject.tag == "Enemy")
+        {
+            EnemiesInExplosionTrigger.Add(collision.gameObject);
+            return;
+        }        
+        
+    }
+
+    private void AreaDamageTriggerExited(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+        {
+            EnemiesInAreaDamageTrigger.Remove(collision.gameObject);
+            return;
+        }
+    }
+    private void AreaDamageTriggerEntered(Collider2D collision)
+    {
+        if(collision.gameObject.tag == "Enemy")
+        {
+            EnemiesInAreaDamageTrigger.Add(collision.gameObject);
+            return;
+        }        
+        
+    }
+
+    private void ExplosionTriggerExited(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+        {
+            EnemiesInExplosionTrigger.Remove(collision.gameObject);
+            return;
         }
     }
 }

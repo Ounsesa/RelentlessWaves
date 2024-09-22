@@ -48,7 +48,6 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        Debug.Log(health.ToString() + "\t" + damage.ToString());
         health -= damage;
         animator.SetTrigger("Hit");
 

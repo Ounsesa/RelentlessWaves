@@ -149,7 +149,6 @@ public class TopDownCharacterController : MonoBehaviour
                 bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
                 bullet.GetComponent<Bullet>().Direction = WeaponList[i].transform.right;
 
-                bullet.transform.rotation = WeaponList[i].transform.rotation * Quaternion.Euler(0, 0, -90);
             }
             yield return new WaitForSeconds(ShootCadency);
         }
