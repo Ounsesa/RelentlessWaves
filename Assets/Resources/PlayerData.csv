@@ -1,13 +1,13 @@
 Stat;InitialValue
 Weapons;1
 Speed;4
-ShootCadency;1,5
+ShootCadency;50
 Damage;1
 DamageMultiplier;1
 Range;3
 BulletSpeed;5
 Size;1
-Follower;0
+Follower;1
 Explodes;1
-Piercing;0
+Piercing;1
 AreaDamage;1

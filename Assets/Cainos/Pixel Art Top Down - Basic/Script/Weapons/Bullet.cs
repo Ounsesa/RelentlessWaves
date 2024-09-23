@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 
 public class Bullet : MonoBehaviour
 {
@@ -67,8 +68,12 @@ public class Bullet : MonoBehaviour
     private List<GameObject> EnemiesInAreaDamageTrigger = new List<GameObject>();
     #endregion
 
+    bool BallEnded = false;
 
 
+    private IObjectPool<Bullet> BulletPool;
+
+    public void SetPool(IObjectPool<Bullet> pool) { BulletPool = pool; }
 
 
 
@@ -81,15 +86,23 @@ public class Bullet : MonoBehaviour
         }
         transform.localScale = Vector3.one * Size;
 
+        BindTriggers();
         InitTriggers();
 
+    }
+    private void InitTriggers()
+    {
+        AreaDamageTrigger.SetActive(AreaDamage);
+        FollowerTrigger.SetActive(Follower);
+        ExplosionTrigger.SetActive(ExplodesOnHit);
         if (AreaDamage)
         {
             StartCoroutine(DealAreaDamage());
         }
+
     }
 
-    private void InitTriggers()
+    private void BindTriggers()
     {
         FollowerTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += FollowerTriggerEntered;
         FollowerTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += FollowerTriggerExited;
@@ -121,9 +134,7 @@ public class Bullet : MonoBehaviour
         }
         else
         {
-            BulletMovement();
-
-            
+            BulletMovement();            
         }
 
 
@@ -131,11 +142,16 @@ public class Bullet : MonoBehaviour
 
     private void EndBullet()
     {
+        if(BallEnded)
+        {
+            return;
+        }
+        BallEnded = true;
         if (ExplodesOnHit)
         {
             DealExplosionDamage();
         }
-        Destroy(gameObject);
+        BulletPool.Release(this);
     }
 
     private void BulletMovement()
@@ -270,4 +286,23 @@ public class Bullet : MonoBehaviour
             return;
         }
     }
+
+    public void RespawnBullet(Bullet OriginBullet)
+    {
+        DistanceTravelled = 0;
+        Size = OriginBullet.Size;
+        Damage = OriginBullet.Damage;
+        DamageMultiplier = OriginBullet.DamageMultiplier;
+        Range = OriginBullet.Range;
+        Speed = OriginBullet.Speed;
+        Piercing = OriginBullet.Piercing;
+        Follower = OriginBullet.Follower;   
+        ExplodesOnHit = OriginBullet.ExplodesOnHit;
+        AreaDamage = OriginBullet.AreaDamage;
+        transform.localScale = Vector3.one * Size;
+
+        BallEnded = false;
+        InitTriggers();
+    }
+
 }

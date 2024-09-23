@@ -19,6 +19,14 @@ public class GameplayManager: MonoBehaviour
     public TopDownCharacterController[] m_players;
 
     #endregion
+
+    #region PlayerLimits
+    [SerializeField]
+    public int MaxWeapons = 20;
+    [SerializeField]
+    public float MinShootCadency = 0.1f;
+    #endregion
+
     private void Awake()
     {
         GameManager.m_instance.m_gameplayManager = this;

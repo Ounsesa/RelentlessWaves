@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1589373376124550587}
   - component: {fileID: 1589373376124550534}
   - component: {fileID: 7609346117288268811}
+  - component: {fileID: 3698160001612648840}
   m_Layer: 8
   m_Name: Enemy 1
   m_TagString: Enemy
@@ -116,7 +117,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1589373376124550589}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
@@ -149,6 +150,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 3
   speed: 2
+  damage: 1
+  EnemyType: 1
 --- !u!50 &7609346117288268811
 Rigidbody2D:
   serializedVersion: 4
@@ -170,3 +173,25 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!195 &3698160001612648840
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1589373376124550589}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 1
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.InputSystem;
+using UnityEngine.Pool;
 using UnityEngine.SocialPlatforms;
 
 public class TopDownCharacterController : MonoBehaviour
@@ -27,6 +28,9 @@ public class TopDownCharacterController : MonoBehaviour
     public GameObject m_interactObject;
 
     public GameObject bulletGameObject;
+
+    private IObjectPool<Bullet> bulletPool;
+
     private Vector2 lookingDirection = new Vector2(1, 0);
 
     public GameObject WeaponGO;
@@ -49,6 +53,9 @@ public class TopDownCharacterController : MonoBehaviour
         PlayerInput playerInput = GetComponent<PlayerInput>();
         _input = GameManager.m_instance.m_gameplayManager.m_inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
 
+
+        bulletPool = new ObjectPool<Bullet>(InstantiateBullet, OnGet, OnRelease);
+
         InitWeapons();
         BindDelegates();
 
@@ -56,6 +63,25 @@ public class TopDownCharacterController : MonoBehaviour
 
 
         Invoke("StartShootCoroutine", ShootCadency);
+    }
+
+    private Bullet InstantiateBullet()
+    {
+        GameObject bulletGO = Instantiate(bulletGameObject);
+        Bullet bullet = bulletGO.GetComponent<Bullet>();
+        bullet.SetPool(bulletPool);
+        return bullet;
+    }
+
+    private void OnGet(Bullet bullet)
+    {
+        bullet.gameObject.SetActive(true);
+        bullet.RespawnBullet(bulletGameObject.GetComponent<Bullet>());
+    }
+
+    private void OnRelease(Bullet bullet)
+    {
+        bullet.gameObject.SetActive(false);
     }
 
     private void InitPlayer()
@@ -145,9 +171,9 @@ public class TopDownCharacterController : MonoBehaviour
         {
             for (int i = 0; i < WeaponNumber; i++)
             {
-                GameObject bullet = Instantiate(bulletGameObject);
+                Bullet bullet = bulletPool.Get();
                 bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
-                bullet.GetComponent<Bullet>().Direction = WeaponList[i].transform.right;
+                bullet.Direction = WeaponList[i].transform.right;
 
             }
             yield return new WaitForSeconds(ShootCadency);
@@ -292,25 +318,57 @@ public class TopDownCharacterController : MonoBehaviour
 
     }
 
-    #region PowerUps
-    public void AddWeapon(bool Add)
+    private void RelocateWeapons()
     {
+        float radius = 0.3f;  // Radius of the circle around the player
+        float AngleStep = 360f / WeaponNumber;  // Angle step for each weapon
 
         for (int i = 0; i < WeaponNumber; i++)
         {
-            Destroy(WeaponList[i]);
+            // Calculate the angle for this weapon
+            float WeaponAngle = AngleStep * i;
+
+            // Convert angle to radians because Unity uses radians for trigonometric functions
+            float angleInRadians = WeaponAngle * Mathf.Deg2Rad;
+
+            // Calculate the position on the circle (polar coordinates to Cartesian)
+            Vector3 weaponPosition = new Vector3(
+                Mathf.Cos(angleInRadians) * radius,  // X position (cosine of the angle)
+                Mathf.Sin(angleInRadians) * radius,  // Y position (sine of the angle)
+                0);  // Z position remains zero since we're rotating in 2D
+
+            // Instantiate the weapon
+            GameObject Weapon = WeaponList[i];
+
+            // Set the position in world space, relative to the player's position
+            Weapon.transform.position = transform.position + weaponPosition + Vector3.up * radius;
+
         }
-        WeaponList.Clear();
+    }
+
+    #region PowerUps
+    public void AddWeapon(bool Add)
+    {        
         if(Add)
         {
             WeaponNumber++;
+
+            WeaponGO.SetActive(true);
+
+            GameObject NewWeapon = Instantiate(WeaponGO, transform);
+            WeaponList.Add(NewWeapon);
+
+            WeaponGO.SetActive(false);
         }
         else 
         {
             WeaponNumber--;
+            GameObject WeaponToRemove = WeaponList[WeaponNumber];
+            WeaponList.Remove(WeaponToRemove);
+            Destroy(WeaponToRemove);
         }
 
-        InitWeapons();
+        RelocateWeapons();
     }
 
     public void AddSpeed(float amount)
@@ -320,7 +378,9 @@ public class TopDownCharacterController : MonoBehaviour
 
     public void ReduceShootCadency(float amount)
     {
-        ShootCadency -= amount;
+        //If the shoot cadency is 0.1, it won't lower more, but it will register the up reset of the power up, so picking this power up in 0.1 is bad
+
+        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameManager.m_instance.m_gameplayManager.MinShootCadency, 5);
     }
 
     public void AddDamage(float amount)

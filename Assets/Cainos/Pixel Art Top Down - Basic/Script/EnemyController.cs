@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.Pool;
 
 public class EnemyController : MonoBehaviour
 {
@@ -12,9 +14,17 @@ public class EnemyController : MonoBehaviour
     public float damage = 1;
     Animator animator;
     BoxCollider2D boxCollider;
-    EnemyTypes EnemyType;
+
+    [SerializeField]
+    public EnemyTypes EnemyType;
+
+    NavMeshAgent agent;
 
     private bool Dead = false;
+
+    private IObjectPool<EnemyController> EnemyPool;
+
+    public void SetPool(IObjectPool<EnemyController> pool) {  EnemyPool = pool; }
 
     // Start is called before the first frame update
     void Start()
@@ -23,36 +33,46 @@ public class EnemyController : MonoBehaviour
         animator = GetComponent<Animator>();
         boxCollider= GetComponent<BoxCollider2D>();
 
+        agent = GetComponent<NavMeshAgent>();
+        agent.updateRotation = false;
+        agent.updateUpAxis = false;
+
+        agent.speed = speed;
+        agent.radius = boxCollider.size.x/2;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!Dead)
+        if (!Dead)
         {
+            agent.SetDestination(player.transform.position);
             if (transform.position.x - player.transform.position.x > 0) { transform.rotation = Quaternion.Euler(0, 180, 0); }
             else { transform.rotation = Quaternion.Euler(0, 0, 0); }
-            transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
         }
-        
+
     }
 
-    public void Init(EnemyTypes enemyType, float _health, float _damage, float _speed)
+    public void Init(EnemyValues enemyValues)
     {
-        EnemyType = enemyType;
-        speed = _speed;
-        InitialHealth = _health;
-        damage = _damage;
-        gameObject.SetActive(false);
+        speed = enemyValues.speed;
+        InitialHealth = enemyValues.health;
+        damage = enemyValues.damage;
     }
 
     public void TakeDamage(float damage)
     {
+        if(Dead)
+        {
+            return;
+        }
         health -= damage;
         animator.SetTrigger("Hit");
 
         if (health <= 0)
         {
+            agent.updatePosition = false;
             Dead = true;
             animator.SetBool("Dead", true);
             boxCollider.enabled = false;
@@ -64,7 +84,11 @@ public class EnemyController : MonoBehaviour
 
     public void Respawn()
     {
-        gameObject.SetActive(true);
+        if(agent == null)
+        {
+            agent = GetComponent<NavMeshAgent>();
+        }
+        agent.updatePosition = true;
         health = InitialHealth;
         Dead = false;
         GetComponent<BoxCollider2D>().enabled = true;
@@ -72,6 +96,6 @@ public class EnemyController : MonoBehaviour
 
     private void RegisterDead()
     {
-        SpawnerController.m_instance.RegisterDead(EnemyType, gameObject);
+        EnemyPool.Release(this);
     }
 }
