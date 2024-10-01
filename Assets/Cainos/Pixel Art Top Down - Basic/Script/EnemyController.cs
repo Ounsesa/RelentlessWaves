@@ -22,6 +22,10 @@ public class EnemyController : MonoBehaviour
 
     private bool Dead = false;
 
+    public float dropChance = 0;
+    public int scoreOnDeath = 0;
+
+
     private IObjectPool<EnemyController> EnemyPool;
 
     public void SetPool(IObjectPool<EnemyController> pool) {  EnemyPool = pool; }
@@ -59,6 +63,8 @@ public class EnemyController : MonoBehaviour
         speed = enemyValues.speed;
         InitialHealth = enemyValues.health;
         damage = enemyValues.damage;
+        dropChance = enemyValues.dropChance;
+        scoreOnDeath = enemyValues.scoreOnDeath;
     }
 
     public void TakeDamage(float damage)
@@ -89,6 +95,7 @@ public class EnemyController : MonoBehaviour
             agent = GetComponent<NavMeshAgent>();
         }
         agent.updatePosition = true;
+        agent.Warp(transform.position);
         health = InitialHealth;
         Dead = false;
         GetComponent<BoxCollider2D>().enabled = true;

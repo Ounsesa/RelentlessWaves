@@ -43,6 +43,8 @@ public class TopDownCharacterController : MonoBehaviour
 
     #endregion
 
+    public int health = 10;
+
 
     private void Start()
     {
@@ -137,6 +139,9 @@ public class TopDownCharacterController : MonoBehaviour
                     outInt = -1;
                     int.TryParse(PlayerDataLine[1], out outInt);
                     bulletGameObject.GetComponent<Bullet>().AreaDamage = outInt == 1 ? true : false;
+                    break;
+                case 12:
+                    health = int.Parse(PlayerDataLine[1]);
                     break;
             }
 

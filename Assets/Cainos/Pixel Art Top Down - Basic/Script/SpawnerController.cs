@@ -20,12 +20,16 @@ public class EnemyValues
     public float health;
     public float damage;
     public float speed;
+    public float dropChance;
+    public int scoreOnDeath;
 
-    public EnemyValues(float health, float damage, float speed)
+    public EnemyValues(float health, float damage, float speed, float dropChance, int scoreOnDeath)
     {
         this.health = health;
         this.damage = damage;
         this.speed = speed;
+        this.dropChance = dropChance;
+        this.scoreOnDeath = scoreOnDeath;
     }
 }
 
@@ -37,6 +41,8 @@ public class SpawnerController : MonoBehaviour
 
     [SerializeField]
     private string EnemiesDataFileName = "EnemiesData";
+    [SerializeField]
+    private GameObject NextWaveCanvas;
 
     public IObjectPool<EnemyController> EnemyPool;
 
@@ -48,10 +54,26 @@ public class SpawnerController : MonoBehaviour
     [SerializeField]
     private TopDownCharacterController player;
     [SerializeField]
+    private ScoreScript ScoreText;
+    [SerializeField]
     private float spawnRange = 10;
 
     Vector2 TopLeft = new Vector2(-10f, 17f);
     Vector2 BottomRight = new Vector2(18f,-12f);
+
+    #region WaveController
+    private int WaveNumber = 0;
+    private int EnemiesPerWave = 5;
+    private bool IsWaveActive = false;
+    private float InitialDecreaseInSpawnRatePerWave = 0.1f;
+    private float DecreaseInSpawnRatePerWave = 0.1f;
+
+    private int EnemiesRemaining = 0;
+    private int EnemiesSpawned = 0;
+    private float CurrentSpawnTime = 0;
+
+    private int EnemiesKilledWithoutDrop = 0;
+    #endregion
 
     public static SpawnerController m_instance;
     void Awake()
@@ -79,9 +101,23 @@ public class SpawnerController : MonoBehaviour
             int EnemyIndex = int.Parse(entry[0]);
             EnemyTypes EnemyType = (EnemyTypes)EnemyIndex;
 
-            EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), float.Parse(entry[2]), float.Parse(entry[3]));
+            EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), float.Parse(entry[2]), float.Parse(entry[3]), float.Parse(entry[4]), int.Parse(entry[5]));
             enemyValues.Add(EnemyType, EnemyValue);
         }
+
+        StartNewWave();
+    }
+
+    public void StartNewWave()
+    {
+        WaveNumber++;
+        EnemiesRemaining = WaveNumber * EnemiesPerWave;
+        DecreaseInSpawnRatePerWave = InitialDecreaseInSpawnRatePerWave / WaveNumber;
+        CurrentSpawnTime = SpawnTime - WaveNumber * DecreaseInSpawnRatePerWave;
+        EnemiesSpawned = 0;
+
+        IsWaveActive = true;
+        GamePauseManager.ResumeGame();
     }
 
 
@@ -97,12 +133,15 @@ public class SpawnerController : MonoBehaviour
 
     private void OnGet(EnemyController enemy)
     {
+        Debug.Log("OnGet");
         enemy.gameObject.SetActive(true);
         Vector3 spawnPosition = Vector3.zero;
         RandomSpawnPoint(player.transform.position, spawnRange, spawnRange + 2, out spawnPosition);
 
+        Debug.Log("Spawn Position" + spawnPosition);
         enemy.transform.position = spawnPosition;
         enemy.Respawn();
+        EnemiesSpawned++;
     }
 
     private void RandomSpawnPoint(Vector3 playerPosition, float minRange, float maxRange, out Vector3 spawnPosition)
@@ -155,8 +194,23 @@ public class SpawnerController : MonoBehaviour
 
     private void OnRelease(EnemyController enemy)
     {
-        PowerUpController.m_instance.SpawnPowerUp(enemy.transform.position);
+        EnemiesKilledWithoutDrop++;
+        float randomValue = Random.Range(0f, 1f);
+        if (randomValue / EnemiesKilledWithoutDrop < enemy.dropChance)
+        {
+            EnemiesKilledWithoutDrop = 0;
+            PowerUpController.m_instance.SpawnPowerUp(enemy.transform.position);
+        }
+        ScoreText.AddScore(enemy.scoreOnDeath);
         enemy.gameObject.SetActive(false);
+
+        EnemiesRemaining--;
+
+        if(EnemiesRemaining <= 0)
+        {
+            NextWaveCanvas.SetActive(true);
+            GamePauseManager.PauseGame();
+        }
     }
 
 
@@ -170,8 +224,13 @@ public class SpawnerController : MonoBehaviour
     {
         while (true)
         {
-            EnemyPool.Get();
-            yield return new WaitForSeconds(SpawnTime);
+
+            if (EnemiesSpawned < WaveNumber * EnemiesPerWave)
+            {
+                EnemyPool.Get();
+            }
+            
+            yield return new WaitForSeconds(CurrentSpawnTime);
         }
     }
 
