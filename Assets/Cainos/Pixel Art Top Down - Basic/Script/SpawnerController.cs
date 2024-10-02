@@ -33,7 +33,7 @@ public class EnemyValues
     }
 }
 
-public class SpawnerController : MonoBehaviour
+public class SpawnerController : MonoBehaviour, IDataPersistence
 {
     public List<GameObject> enemyPrefabs;
 
@@ -108,9 +108,17 @@ public class SpawnerController : MonoBehaviour
         StartNewWave();
     }
 
+    public void LoadData(GameData data)
+    {
+        WaveNumber = data.WaveNumber;
+    }
+    public void SaveData(ref GameData data)
+    {
+        data.WaveNumber = WaveNumber;
+    }
+
     public void StartNewWave()
     {
-        WaveNumber++;
         EnemiesRemaining = WaveNumber * EnemiesPerWave;
         DecreaseInSpawnRatePerWave = InitialDecreaseInSpawnRatePerWave / WaveNumber;
         CurrentSpawnTime = SpawnTime - WaveNumber * DecreaseInSpawnRatePerWave;
@@ -209,6 +217,7 @@ public class SpawnerController : MonoBehaviour
         if(EnemiesRemaining <= 0)
         {
             NextWaveCanvas.SetActive(true);
+            WaveNumber++;
             GamePauseManager.PauseGame();
         }
     }

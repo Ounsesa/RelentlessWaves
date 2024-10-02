@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PowerUpController : MonoBehaviour
+public class PowerUpController : MonoBehaviour, IDataPersistence
 {
     public static PowerUpController m_instance;
     public string ResourceName = "PowerUpData";
@@ -40,7 +40,20 @@ public class PowerUpController : MonoBehaviour
 
         m_instance = this;
 
+    }
+
+    public void InitializeFromCSV()
+    {
         CSVParser.ParseStringListToPowerUpValuesList(ResourceName, out PowerUpValuesData);
+    }
+
+    public void LoadData(GameData data)
+    {
+        PowerUpValuesData = data.powerUpValuesList;
+    }
+    public void SaveData(ref GameData data)
+    {
+        data.powerUpValuesList = PowerUpValuesData;
     }
 
     public void SpawnPowerUp(Vector3 position)

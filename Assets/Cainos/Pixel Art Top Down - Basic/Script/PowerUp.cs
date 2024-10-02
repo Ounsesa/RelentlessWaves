@@ -20,7 +20,7 @@ public enum PowerUpEnum
     AreaDamage,
 }
 
-
+[System.Serializable]
 public class PowerUpValues
 {
     public PowerUpEnum powerUpValue = PowerUpEnum.NewWeapon;

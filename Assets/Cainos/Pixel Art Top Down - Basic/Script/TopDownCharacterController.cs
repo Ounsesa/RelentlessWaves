@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.SocialPlatforms;
 
-public class TopDownCharacterController : MonoBehaviour
+public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 {
     public Utils.Players m_playerID;
     public PlayerInput[] m_playerInput;
@@ -45,6 +45,14 @@ public class TopDownCharacterController : MonoBehaviour
 
     public int health = 10;
 
+    public void LoadData(GameData data)
+    {
+        health = data.PlayerHealth;
+    }
+    public void SaveData(ref GameData data)
+    {
+        data.PlayerHealth = health;
+    }
 
     private void Start()
     {
