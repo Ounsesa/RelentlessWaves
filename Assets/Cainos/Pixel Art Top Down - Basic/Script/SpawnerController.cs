@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using TMPro;
 using UnityEditorInternal.Profiling.Memory.Experimental.FileFormat;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Pool;
+using UnityEngine.SocialPlatforms.Impl;
 
 public enum EnemyTypes
 {
@@ -42,12 +44,16 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     [SerializeField]
     private string EnemiesDataFileName = "EnemiesData";
     [SerializeField]
-    private GameObject NextWaveCanvas;
+    private List<GameObject> CanvasToShow;
+    [SerializeField]
+    private List<GameObject> CanvasToHide;
 
     public IObjectPool<EnemyController> EnemyPool;
 
     [SerializeField]
     private float SpawnTime = 1;
+    [SerializeField]
+    private float TimeToFirstSpawn = 5;
 
     List<string[]> EnemiesListData = new List<string[]>();
 
@@ -58,12 +64,18 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     [SerializeField]
     private float spawnRange = 10;
 
+
+    [SerializeField]
+    private GameObject WaveText;
+    [SerializeField]
+    private GameObject EnemiesRemainingText;
+
     Vector2 TopLeft = new Vector2(-10f, 17f);
     Vector2 BottomRight = new Vector2(18f,-12f);
 
     #region WaveController
-    private int WaveNumber = 0;
-    private int EnemiesPerWave = 5;
+    private int WaveNumber = 1;
+    private int EnemiesPerWave = 6;
     private bool IsWaveActive = false;
     private float InitialDecreaseInSpawnRatePerWave = 0.1f;
     private float DecreaseInSpawnRatePerWave = 0.1f;
@@ -76,6 +88,8 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     #endregion
 
     public static SpawnerController m_instance;
+
+    public int Score = 0;
     void Awake()
     {
         if (m_instance != null)
@@ -92,7 +106,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
         EnemyPool = new ObjectPool<EnemyController>(SpawnEnemyFromPool, OnGet, OnRelease);
 
-        Invoke("StartSpawningCoroutine", SpawnTime);
+        Invoke("StartSpawningCoroutine", TimeToFirstSpawn);
 
         EnemiesListData = CSVParser.ParseCSVToStringList(EnemiesDataFileName);
         EnemiesListData.RemoveAt(0);
@@ -104,7 +118,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), float.Parse(entry[2]), float.Parse(entry[3]), float.Parse(entry[4]), int.Parse(entry[5]));
             enemyValues.Add(EnemyType, EnemyValue);
         }
-
+        
         StartNewWave();
     }
 
@@ -119,10 +133,14 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     public void StartNewWave()
     {
+        WaveText.GetComponent<TextMeshProUGUI>().text = WaveNumber.ToString();
         EnemiesRemaining = WaveNumber * EnemiesPerWave;
-        DecreaseInSpawnRatePerWave = InitialDecreaseInSpawnRatePerWave / WaveNumber;
-        CurrentSpawnTime = SpawnTime - WaveNumber * DecreaseInSpawnRatePerWave;
+        EnemiesRemainingText.GetComponent<TextMeshProUGUI>().text = EnemiesRemaining.ToString();
+        DecreaseInSpawnRatePerWave = InitialDecreaseInSpawnRatePerWave * WaveNumber;
+        CurrentSpawnTime = Mathf.Clamp(SpawnTime - DecreaseInSpawnRatePerWave, 0.1f, SpawnTime);
         EnemiesSpawned = 0;
+
+        Debug.Log(CurrentSpawnTime);
 
         IsWaveActive = true;
         GamePauseManager.ResumeGame();
@@ -131,7 +149,32 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     private EnemyController SpawnEnemyFromPool()
     {
-        GameObject enemyGO = Instantiate(enemyPrefabs[Random.Range(0, enemyPrefabs.Count)]);
+        float RandomNumber = Random.value;
+
+        GameObject enemyPrefab = null;
+
+        if(RandomNumber < 0.05)
+        {
+            enemyPrefab = enemyPrefabs[4];
+        }
+        else if(RandomNumber < 0.2)
+        {
+            enemyPrefab = enemyPrefabs[3];
+        }
+        else if(RandomNumber < 0.45)
+        {
+            enemyPrefab = enemyPrefabs[2];
+        }
+        else if(RandomNumber < 0.7)
+        {
+            enemyPrefab = enemyPrefabs[1];
+        }
+        else
+        {
+            enemyPrefab = enemyPrefabs[0];
+        }
+
+        GameObject enemyGO = Instantiate(enemyPrefab);
         EnemyController enemy = enemyGO.GetComponent<EnemyController>();
         enemy.Init(enemyValues[enemy.EnemyType]);
         enemy.SetPool(EnemyPool);
@@ -141,12 +184,10 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     private void OnGet(EnemyController enemy)
     {
-        Debug.Log("OnGet");
         enemy.gameObject.SetActive(true);
         Vector3 spawnPosition = Vector3.zero;
         RandomSpawnPoint(player.transform.position, spawnRange, spawnRange + 2, out spawnPosition);
 
-        Debug.Log("Spawn Position" + spawnPosition);
         enemy.transform.position = spawnPosition;
         enemy.Respawn();
         EnemiesSpawned++;
@@ -184,7 +225,6 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             }
         }
 
-        Debug.LogWarning("Failed to find a valid spawn position after several attempts.");
     }
 
     private bool IsPositionSafe(Vector3 spawnPosition, float checkRadius)
@@ -193,7 +233,6 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(spawnPosition, checkRadius);
         if (hitColliders.Length > 0)
         {
-            Debug.Log("Unsafe spawn position detected. Retrying...");
             return false; // Unsafe position
         }
         return true; // Safe position
@@ -209,17 +248,36 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             EnemiesKilledWithoutDrop = 0;
             PowerUpController.m_instance.SpawnPowerUp(enemy.transform.position);
         }
+        Score += enemy.scoreOnDeath;
         ScoreText.AddScore(enemy.scoreOnDeath);
         enemy.gameObject.SetActive(false);
 
         EnemiesRemaining--;
+        EnemiesRemainingText.GetComponent<TextMeshProUGUI>().text = EnemiesRemaining.ToString();
 
-        if(EnemiesRemaining <= 0)
+        if (EnemiesRemaining <= 0)
         {
-            NextWaveCanvas.SetActive(true);
+            foreach(GameObject go in CanvasToShow)
+            {
+                go.SetActive(true);
+            }
+            foreach(GameObject go in CanvasToHide)
+            {
+                go.SetActive(false);
+            }
             WaveNumber++;
+            if(WaveNumber >= 10)
+            {
+                EnemiesPerWave = 10;
+            }
             GamePauseManager.PauseGame();
         }
+    }
+
+    public void SpendScore(int ScoreToSpend)
+    {
+        Score -= ScoreToSpend;
+        ScoreText.AddScore(-ScoreToSpend);
     }
 
 

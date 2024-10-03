@@ -144,11 +144,6 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                     bulletGameObject.GetComponent<Bullet>().Piercing = outInt == 1 ? true : false;
                     break;
                 case 11:
-                    outInt = -1;
-                    int.TryParse(PlayerDataLine[1], out outInt);
-                    bulletGameObject.GetComponent<Bullet>().AreaDamage = outInt == 1 ? true : false;
-                    break;
-                case 12:
                     health = int.Parse(PlayerDataLine[1]);
                     break;
             }
@@ -166,7 +161,6 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         PowerUpController.m_instance.OnDamagePicked += AddDamage;
         PowerUpController.m_instance.OnDamageMultiplierPicked += AddDamageMultiplier;
         PowerUpController.m_instance.OnBulletSpeedPicked += AddBulletSpeed;
-        PowerUpController.m_instance.OnAreaDamagePicked += SetAreaDamage;
         PowerUpController.m_instance.OnNewWeaponPicked += AddWeapon;
         PowerUpController.m_instance.OnShootCadencyPicked += ReduceShootCadency;
         PowerUpController.m_instance.OnPiercingPicked += SetPiercing;
@@ -360,25 +354,31 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     }
 
     #region PowerUps
-    public void AddWeapon(bool Add)
+    public void AddWeapon(bool Add, int weapons)
     {        
         if(Add)
         {
-            WeaponNumber++;
+            WeaponNumber += weapons;
 
             WeaponGO.SetActive(true);
 
-            GameObject NewWeapon = Instantiate(WeaponGO, transform);
-            WeaponList.Add(NewWeapon);
+            for(int i = 0; i < weapons; i++)
+            {
+                GameObject NewWeapon = Instantiate(WeaponGO, transform);
+                WeaponList.Add(NewWeapon);
+            }
 
             WeaponGO.SetActive(false);
         }
         else 
         {
-            WeaponNumber--;
-            GameObject WeaponToRemove = WeaponList[WeaponNumber];
-            WeaponList.Remove(WeaponToRemove);
-            Destroy(WeaponToRemove);
+            WeaponNumber += weapons;
+            for(int i =0; i< -weapons; i++)
+            {
+                GameObject WeaponToRemove = WeaponList[0];
+                WeaponList.Remove(WeaponToRemove);
+                Destroy(WeaponToRemove);
+            }
         }
 
         RelocateWeapons();
@@ -393,7 +393,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         //If the shoot cadency is 0.1, it won't lower more, but it will register the up reset of the power up, so picking this power up in 0.1 is bad
 
-        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameManager.m_instance.m_gameplayManager.MinShootCadency, 5);
+        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameManager.m_instance.m_gameplayManager.MinShootCadency, 1);
     }
 
     public void AddDamage(float amount)
@@ -436,10 +436,6 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         bulletGameObject.GetComponent<Bullet>().Piercing = Piercing;
     }
 
-    public void SetAreaDamage(bool AreaDamage)
-    {
-        bulletGameObject.GetComponent<Bullet>().AreaDamage = AreaDamage;
-    } 
 
 
     #endregion

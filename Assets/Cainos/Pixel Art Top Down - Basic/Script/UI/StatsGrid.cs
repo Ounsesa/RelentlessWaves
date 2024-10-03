@@ -29,8 +29,6 @@ public class StatsGrid : MonoBehaviour
     [SerializeField] private GameObject ExplodesValueTextNew;
     [SerializeField] private GameObject PiercingValueText;
     [SerializeField] private GameObject PiercingValueTextNew;
-    [SerializeField] private GameObject AreaDamageValueText;
-    [SerializeField] private GameObject AreaDamageValueTextNew;
 
     [SerializeField] private TopDownCharacterController Player;
     [SerializeField] private float DelayTime = 1;
@@ -76,8 +74,6 @@ public class StatsGrid : MonoBehaviour
         textMeshPro = PiercingValueText.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = "No";
 
-        textMeshPro = AreaDamageValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = "No";
 
         BindDelegates();
     }
@@ -96,7 +92,6 @@ public class StatsGrid : MonoBehaviour
         PowerUpController.m_instance.OnFollowerPicked += SetFollowerValues;
         PowerUpController.m_instance.OnExplosionPicked += SetExplodesValues;
         PowerUpController.m_instance.OnPiercingPicked += SetPiercingValues;
-        PowerUpController.m_instance.OnAreaDamagePicked += SetAreaDamageValues;
     }
 
     // Update methods for each stat
@@ -111,14 +106,14 @@ public class StatsGrid : MonoBehaviour
         StartCoroutine(DelayedHideText(DelayTime, SpeedValueTextNew));
     }
 
-    private void SetWeaponsValues(bool value)
+    private void SetWeaponsValues(bool value, int weapons)
     {
 
         TextMeshProUGUI textMeshPro = WeaponsValueText.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = Player.WeaponNumber.ToString();
 
         textMeshPro = WeaponsValueTextNew.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = value ? "+ 1" : "- 1";
+        textMeshPro.text = value ? $"+ {weapons}" : $"{weapons}";
         StartCoroutine(DelayedHideText(DelayTime, WeaponsValueTextNew));
     }
 
@@ -218,19 +213,9 @@ public class StatsGrid : MonoBehaviour
         StartCoroutine(DelayedHideText(DelayTime, PiercingValueTextNew));
     }
 
-    private void SetAreaDamageValues(bool value)
-    {
-        TextMeshProUGUI textMeshPro = AreaDamageValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = value ? "Yes" : "No";
-
-        textMeshPro = AreaDamageValueTextNew.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = value ? "Yes" : "No";
-        StartCoroutine(DelayedHideText(DelayTime, AreaDamageValueTextNew));
-    }
 
     public IEnumerator DelayedHideText(float delayTime, GameObject textToHide)
     {
-        Debug.Log(delayTime);
         // Wait for the specified delay time
         yield return new WaitForSeconds(delayTime);
 

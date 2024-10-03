@@ -6,7 +6,9 @@ using UnityEngine.UI;
 public class NextWaveButton : MonoBehaviour
 {
     [SerializeField]
-    private GameObject Canvas;
+    private List<GameObject> CanvasToHide;
+    [SerializeField]
+    private List<GameObject> CanvasToShow;
     private void Awake()
     {
         GetComponent<Button>().onClick.AddListener(StartNewWave);
@@ -15,6 +17,14 @@ public class NextWaveButton : MonoBehaviour
     private void StartNewWave()
     {
         SpawnerController.m_instance.StartNewWave();
-        Canvas.SetActive(false);
+
+        foreach (GameObject go in CanvasToHide) 
+        {
+            go.SetActive(false);
+        }
+        foreach (GameObject go in CanvasToShow) 
+        {
+            go.SetActive(true);
+        }
     }
 }

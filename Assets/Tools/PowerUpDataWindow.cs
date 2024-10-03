@@ -121,6 +121,7 @@ public class PowerUpDataWindow : EditorWindow
             string newScoreOnDeath = EditorGUILayout.TextField(EnemyValues[i][5]);
 
             float newHealthFloat;
+
             if (!(float.TryParse(newHealth, out newHealthFloat)))
             {
                 EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Amount", "Okey");
@@ -163,6 +164,9 @@ public class PowerUpDataWindow : EditorWindow
         EditorGUILayout.TextArea("Power Up");
         EditorGUILayout.TextArea("Amount");
         EditorGUILayout.TextArea("Duration");
+        EditorGUILayout.TextArea("Cost");
+        EditorGUILayout.TextArea("UphradeAmount");
+        EditorGUILayout.TextArea("UpgradeDuration");
         EditorGUILayout.EndHorizontal();
         for (int i = 0; i < PowerUpValues.Count; i++)
         {
@@ -170,6 +174,9 @@ public class PowerUpDataWindow : EditorWindow
             EditorGUILayout.TextField(PowerUpValues[i].powerUpValue.ToString());
             string newAmount = EditorGUILayout.TextField(PowerUpValues[i].powerUpAmount.ToString());
             string newDuration = EditorGUILayout.TextField(PowerUpValues[i].powerUpDuration.ToString());
+            string newCost = EditorGUILayout.TextField(PowerUpValues[i].powerUpCostUpgrade.ToString());
+            string newUpgradeAmount = EditorGUILayout.TextField(PowerUpValues[i].powerUpUpgradeAmount.ToString());
+            string newUpgradeDuration = EditorGUILayout.TextField(PowerUpValues[i].powerUpUpgradeDuration.ToString());
 
             float newAmountFloat;
             if (!(float.TryParse(newAmount, out newAmountFloat) || newAmount == "-"))
@@ -188,6 +195,33 @@ public class PowerUpDataWindow : EditorWindow
             else
             {
                 PowerUpValues[i].powerUpDuration = newDurationFloat;
+            }
+            int newCostFloat;
+            if (!(int.TryParse(newCost, out newCostFloat) || newDuration == "-"))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Duration", "Okey");
+            }
+            else
+            {
+                PowerUpValues[i].powerUpCostUpgrade = newCostFloat;
+            }
+            float newUpgradeAmountFloat;
+            if (!(float.TryParse(newUpgradeAmount, out newUpgradeAmountFloat) || newDuration == "-"))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Duration", "Okey");
+            }
+            else
+            {
+                PowerUpValues[i].powerUpUpgradeAmount = newUpgradeAmountFloat;
+            }
+            float newUpgradeDurationFloat;
+            if (!(float.TryParse(newUpgradeDuration, out newUpgradeDurationFloat) || newDuration == "-"))
+            {
+                EditorUtility.DisplayDialog("Error: Invalid Number", "Error: Invalid Duration", "Okey");
+            }
+            else
+            {
+                PowerUpValues[i].powerUpUpgradeDuration = newUpgradeDurationFloat;
             }
 
             EditorGUILayout.EndHorizontal();

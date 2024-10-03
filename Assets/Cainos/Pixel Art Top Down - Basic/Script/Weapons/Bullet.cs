@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -47,26 +46,8 @@ public class Bullet : MonoBehaviour
     private List<GameObject> EnemiesInExplosionTrigger = new List<GameObject>();
 
     public bool ExplodesOnHit = false;
-    [SerializeField]
-    float ExplosionArea = 10;
 
-    [SerializeField]
-    float ExplosionDamage = 5;
-    #endregion
-
-    #region AreaDamage
-    [SerializeField]
-    private GameObject AreaDamageTrigger;
-
-    public bool AreaDamage = false;
-    [SerializeField]
-    float AreaSize = 2;
-    [SerializeField]
-    float TimeBetweenDamages = 0.5f;
-    [SerializeField]
-    float AreaDamageAmount = 1f;
-    private List<GameObject> EnemiesInAreaDamageTrigger = new List<GameObject>();
-    #endregion
+    #endregion   
 
     bool BallEnded = false;
 
@@ -75,7 +56,8 @@ public class Bullet : MonoBehaviour
 
     public void SetPool(IObjectPool<Bullet> pool) { BulletPool = pool; }
 
-
+    [SerializeField]
+    private GameObject ExplosionCircle;
 
     // Start is called before the first frame update
     void Start()
@@ -85,21 +67,14 @@ public class Bullet : MonoBehaviour
             return;
         }
         transform.localScale = Vector3.one * Size;
-
         BindTriggers();
         InitTriggers();
 
     }
     private void InitTriggers()
     {
-        AreaDamageTrigger.SetActive(AreaDamage);
         FollowerTrigger.SetActive(Follower);
         ExplosionTrigger.SetActive(ExplodesOnHit);
-        if (AreaDamage)
-        {
-            StartCoroutine(DealAreaDamage());
-        }
-
     }
 
     private void BindTriggers()
@@ -110,11 +85,6 @@ public class Bullet : MonoBehaviour
 
         ExplosionTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += ExplosionTriggerEntered;
         ExplosionTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += ExplosionTriggerExited;
-        ExplosionTrigger.GetComponent<CircleCollider2D>().radius = ExplosionArea;
-
-        AreaDamageTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += AreaDamageTriggerEntered;
-        AreaDamageTrigger.GetComponent<CustomTrigger>().OnTriggerExited2D += AreaDamageTriggerExited;
-        AreaDamageTrigger.GetComponent<CircleCollider2D>().radius = AreaSize;
 
         HitTrigger.GetComponent<CustomTrigger>().OnTriggerEntered2D += HitTriggerEnter;
         
@@ -149,9 +119,25 @@ public class Bullet : MonoBehaviour
         BallEnded = true;
         if (ExplodesOnHit)
         {
+            ExplosionCircle.SetActive(true);
+            Speed = 0f;
+            Debug.Log("Active Circle");
+            Invoke("RemoveExplosionCircle", 0.25f);
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            GetComponent<SpriteRenderer>().enabled = false;
             DealExplosionDamage();
         }
+        else
+        {
+            BulletPool.Release(this);
+        }
+    }
+
+    private void RemoveExplosionCircle()
+    {
         BulletPool.Release(this);
+        ExplosionCircle.SetActive(false);
+        Debug.Log("Deactive Circle");
     }
 
     private void BulletMovement()
@@ -202,20 +188,9 @@ public class Bullet : MonoBehaviour
     {
         for(int i = 0; i < EnemiesInExplosionTrigger.Count; i++)
         {
-            EnemiesInExplosionTrigger[i].GetComponent<EnemyController>().TakeDamage(ExplosionDamage * DamageMultiplier);
+            EnemiesInExplosionTrigger[i].GetComponent<EnemyController>().TakeDamage(Damage * DamageMultiplier);
         }
-    }
-    private IEnumerator DealAreaDamage()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(TimeBetweenDamages);
-            for (int i = 0; i < EnemiesInAreaDamageTrigger.Count; i++)
-            {
-                EnemiesInAreaDamageTrigger[i].GetComponent<EnemyController>().TakeDamage(AreaDamageAmount * DamageMultiplier);
-            }
-        }
-    }
+    }   
 
     private void FollowerTriggerEntered(Collider2D collision)
     {
@@ -259,25 +234,7 @@ public class Bullet : MonoBehaviour
         }        
         
     }
-
-    private void AreaDamageTriggerExited(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "Enemy")
-        {
-            EnemiesInAreaDamageTrigger.Remove(collision.gameObject);
-            return;
-        }
-    }
-    private void AreaDamageTriggerEntered(Collider2D collision)
-    {
-        if(collision.gameObject.tag == "Enemy")
-        {
-            EnemiesInAreaDamageTrigger.Add(collision.gameObject);
-            return;
-        }        
-        
-    }
-
+  
     private void ExplosionTriggerExited(Collider2D collision)
     {
         if (collision.gameObject.tag == "Enemy")
@@ -289,6 +246,7 @@ public class Bullet : MonoBehaviour
 
     public void RespawnBullet(Bullet OriginBullet)
     {
+        GetComponent<SpriteRenderer>().enabled = true;
         DistanceTravelled = 0;
         Size = OriginBullet.Size;
         Damage = OriginBullet.Damage;
@@ -298,7 +256,6 @@ public class Bullet : MonoBehaviour
         Piercing = OriginBullet.Piercing;
         Follower = OriginBullet.Follower;   
         ExplodesOnHit = OriginBullet.ExplodesOnHit;
-        AreaDamage = OriginBullet.AreaDamage;
         transform.localScale = Vector3.one * Size;
 
         BallEnded = false;

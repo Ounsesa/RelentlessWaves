@@ -86,9 +86,6 @@ public class CSVParser : MonoBehaviour
                 case "Piercing":
                     row.powerUpValue = PowerUpEnum.Piercing;
                     break;
-                case "AreaDamage":
-                    row.powerUpValue = PowerUpEnum.AreaDamage;
-                    break;
                 default:
                     throw new ArgumentException($"Unknown power-up type: {line[0]}");
             }
@@ -96,6 +93,9 @@ public class CSVParser : MonoBehaviour
 
             row.powerUpAmount = float.Parse(line[1]);
             row.powerUpDuration = float.Parse(line[2]);
+            row.powerUpCostUpgrade = int.Parse(line[3]);
+            row.powerUpUpgradeAmount = float.Parse(line[4]);
+            row.powerUpUpgradeDuration = float.Parse(line[5]);
             PowerUpValuesList.Add(row);
         }
     }
@@ -118,12 +118,12 @@ public class CSVParser : MonoBehaviour
         using (StreamWriter writer = new StreamWriter(filePath))
         {
             // Write the header
-            writer.WriteLine("PowerUpType;Amount;Duration");
+            writer.WriteLine("PowerUpType;Amount;Duration;Cost;UpgradeAmount;UpgradeDuration");
 
             // Write each PowerUpValues entry as a line in the CSV file
             foreach (var powerUp in powerUpValuesList)
             {
-                string line = $"{powerUp.powerUpValue};{powerUp.powerUpAmount};{powerUp.powerUpDuration}";
+                string line = $"{powerUp.powerUpValue};{powerUp.powerUpAmount};{powerUp.powerUpDuration};{powerUp.powerUpCostUpgrade};{powerUp.powerUpUpgradeAmount};{powerUp.powerUpUpgradeDuration}";
                 writer.WriteLine(line);
             }
         }

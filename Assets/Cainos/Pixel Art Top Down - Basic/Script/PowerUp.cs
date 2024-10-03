@@ -17,7 +17,6 @@ public enum PowerUpEnum
     Follower,
     Explodes,
     Piercing,
-    AreaDamage,
 }
 
 [System.Serializable]
@@ -26,12 +25,18 @@ public class PowerUpValues
     public PowerUpEnum powerUpValue = PowerUpEnum.NewWeapon;
     public float powerUpAmount = 10;
     public float powerUpDuration = 5;
+    public int powerUpCostUpgrade = 100;
+    public float powerUpUpgradeAmount = 1;
+    public float powerUpUpgradeDuration = 1;
     public PowerUpValues() { }
     public PowerUpValues(PowerUpValues original)
     {
         powerUpValue = original.powerUpValue;
         powerUpAmount = original.powerUpAmount;
         powerUpDuration = original.powerUpDuration;
+        powerUpCostUpgrade = original.powerUpCostUpgrade;
+        powerUpUpgradeAmount = original.powerUpUpgradeAmount;
+        powerUpUpgradeDuration = original.powerUpUpgradeDuration;
     }
 }
 

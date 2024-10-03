@@ -12,6 +12,8 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
     public GameObject powerUpGO;
     public TopDownCharacterController m_characterController;
 
+    public int NumberOfValues = 1;
+
     List<PowerUpValues> PowerUpValuesData = new List<PowerUpValues>();
 
 
@@ -23,10 +25,9 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
     public event System.Action<float> OnSizePicked;
     public event System.Action<float> OnShootCadencyPicked;
     public event System.Action<float> OnBulletSpeedPicked;
-    public event System.Action<bool> OnNewWeaponPicked;
+    public event System.Action<bool, int> OnNewWeaponPicked;
     public event System.Action<bool> OnFollowerPicked;
     public event System.Action<bool> OnPiercingPicked;
-    public event System.Action<bool> OnAreaDamagePicked;
     public event System.Action<bool> OnExplosionPicked;
     #endregion
 
@@ -49,22 +50,26 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
     public void LoadData(GameData data)
     {
-        PowerUpValuesData = data.powerUpValuesList;
+        if(data.powerUpValuesList.Count > 0)
+        {
+            PowerUpValuesData = data.powerUpValuesList;
+        }
+        NumberOfValues = data.NumberOfPowerUpValues;
     }
     public void SaveData(ref GameData data)
     {
         data.powerUpValuesList = PowerUpValuesData;
+        data.NumberOfPowerUpValues = NumberOfValues;
     }
 
     public void SpawnPowerUp(Vector3 position)
     {
         GameObject InstantiatedPowerUp = Instantiate(powerUpGO, position, Quaternion.identity);
-
-        int numberOfValues = UnityEngine.Random.Range(1, 3);
+        Destroy(InstantiatedPowerUp, 15f);
 
         List<PowerUpValues> valuesForThisPowerUp = new List<PowerUpValues>();
 
-        for(int i = 0; i < numberOfValues; i++) 
+        for(int i = 0; i < NumberOfValues; i++) 
         {
             PowerUpValues randomValue = PowerUpValuesData[UnityEngine.Random.Range(0, PowerUpValuesData.Count)];
 
@@ -92,7 +97,7 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
         switch (powerUpValues.powerUpValue)
         {
             case PowerUpEnum.NewWeapon:
-                OnNewWeaponPicked?.Invoke(powerUpValues.powerUpAmount > 0);
+                OnNewWeaponPicked?.Invoke(powerUpValues.powerUpAmount > 0, (int)powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Speed:
                 OnSpeedPicked?.Invoke(powerUpValues.powerUpAmount);
@@ -124,9 +129,6 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
             case PowerUpEnum.Piercing:
                 OnPiercingPicked?.Invoke(powerUpValues.powerUpAmount > 0);
                 break;
-            case PowerUpEnum.AreaDamage:
-                OnAreaDamagePicked?.Invoke(powerUpValues.powerUpAmount > 0);
-                break;
             default:
                 Debug.LogWarning("Unknown power-up type: " + powerUpValues.powerUpValue);
                 break;
@@ -134,14 +136,9 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
         if(powerUpValues.powerUpAmount > 0)
         {
-            Debug.Log(powerUpValues.powerUpValue + "+");
             PowerUpValues copiedValue = new PowerUpValues(powerUpValues);
             copiedValue.powerUpAmount = -powerUpValues.powerUpAmount;
             StartCoroutine(DelayedFunction(copiedValue.powerUpDuration, RegisterPowerUpValues, copiedValue));
-        }
-        else
-        {
-            Debug.Log(powerUpValues.powerUpValue + "-");
         }
     }
 
@@ -154,6 +151,37 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
         // Call the function with the passed parameter
         functionToCall(parameter);
+    }
+
+    public void AddDuration(PowerUpEnum powerUpType, float DurationToAdd)
+    {
+        PowerUpValues powerUpData = GetPowerUpData(powerUpType);
+        if (powerUpData != null)
+        {
+            powerUpData.powerUpDuration += DurationToAdd;
+        }
+    }
+
+    public void AddAmount(PowerUpEnum powerUpType, float AmountToAdd)
+    {
+        PowerUpValues powerUpData = GetPowerUpData(powerUpType);
+        if (powerUpData != null)
+        {
+            powerUpData.powerUpAmount += AmountToAdd;
+        }
+    }
+
+    public PowerUpValues GetPowerUpData(PowerUpEnum powerUpType)
+    {
+        foreach (PowerUpValues powerUpData in PowerUpValuesData)
+        {
+            if (powerUpData.powerUpValue == powerUpType)
+            {
+                return powerUpData;
+            }
+        }
+
+        return null; 
     }
 
 }

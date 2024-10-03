@@ -5,7 +5,6 @@ using UnityEngine;
 
 public abstract class InteractuableItem : MonoBehaviour
 {
-    private bool alreadyInteracted = false;
 
     protected abstract void StartInteraction();
     protected abstract void EndInteraction();
