@@ -18,8 +18,6 @@ public class EnemyController : MonoBehaviour
     [SerializeField]
     public EnemyTypes EnemyType;
 
-    NavMeshAgent agent;
-
     private bool Dead = false;
 
     public float dropChance = 0;
@@ -37,13 +35,6 @@ public class EnemyController : MonoBehaviour
         animator = GetComponent<Animator>();
         boxCollider= GetComponent<BoxCollider2D>();
 
-        agent = GetComponent<NavMeshAgent>();
-        agent.updateRotation = false;
-        agent.updateUpAxis = false;
-
-        agent.speed = speed;
-        agent.radius = boxCollider.size.x/2;
-
     }
 
     // Update is called once per frame
@@ -51,7 +42,6 @@ public class EnemyController : MonoBehaviour
     {
         if (!Dead)
         {
-            agent.SetDestination(player.transform.position);
             if (transform.position.x - player.transform.position.x > 0) { transform.rotation = Quaternion.Euler(0, 180, 0); }
             else { transform.rotation = Quaternion.Euler(0, 0, 0); }
         }
@@ -78,7 +68,6 @@ public class EnemyController : MonoBehaviour
 
         if (health <= 0)
         {
-            agent.updatePosition = false;
             Dead = true;
             animator.SetBool("Dead", true);
             boxCollider.enabled = false;
@@ -90,12 +79,6 @@ public class EnemyController : MonoBehaviour
 
     public void Respawn()
     {
-        if(agent == null)
-        {
-            agent = GetComponent<NavMeshAgent>();
-        }
-        agent.updatePosition = true;
-        agent.Warp(transform.position);
         health = InitialHealth;
         Dead = false;
         GetComponent<BoxCollider2D>().enabled = true;

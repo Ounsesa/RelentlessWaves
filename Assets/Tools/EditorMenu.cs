@@ -10,9 +10,4 @@ public class EditorMenu : MonoBehaviour
     {
         PowerUpDataWindow.InitWindow();
     }
-    [MenuItem("Tools/NavMesh Window")]
-    public static void OpenNavMeshSetUpWindow()
-    {
-        NavMeshSetUpWindows.InitWindow();
-    }
 }
