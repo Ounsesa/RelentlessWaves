@@ -103,6 +103,13 @@ public class EnemyController : MonoBehaviour
 
     private void RegisterDead()
     {
-        EnemyPool.Release(this);
+        try
+        {
+            EnemyPool.Release(this);
+        }
+        catch
+        {
+
+        }
     }
 }

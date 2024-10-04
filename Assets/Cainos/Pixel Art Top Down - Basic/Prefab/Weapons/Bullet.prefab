@@ -133,7 +133,6 @@ MonoBehaviour:
   FollowerTrigger: {fileID: 8577844823371130731}
   ExplosionTrigger: {fileID: 7740197255939830646}
   ExplodesOnHit: 0
-  ExplosionDamage: 5
   ExplosionCircle: {fileID: 3189809243756940561}
 --- !u!1 &3189809243756940561
 GameObject:
@@ -210,7 +209,7 @@ SpriteRenderer:
   m_SortingOrder: 2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b,
     type: 3}
-  m_Color: {r: 0.8113208, g: 0.42724904, b: 0.07271269, a: 1}
+  m_Color: {r: 0.8396226, g: 0.49072084, b: 0.17030083, a: 0.7372549}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

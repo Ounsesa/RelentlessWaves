@@ -14,6 +14,8 @@ public class DataPersistenceManager : MonoBehaviour
     private GameData GameData = null;
     private List<IDataPersistence> dataPersistences = new List<IDataPersistence>();
 
+    public int BonusCost = 2000;
+
     public static DataPersistenceManager instance;
     void Awake()
     {
@@ -53,6 +55,7 @@ public class DataPersistenceManager : MonoBehaviour
         {
             persistence.LoadData(GameData);
         }
+        BonusCost = GameData.BonusCost;
     }
 
     public void SaveGame()
@@ -62,6 +65,7 @@ public class DataPersistenceManager : MonoBehaviour
             persistence.SaveData(ref GameData);
         }
 
+        GameData.BonusCost = BonusCost;
         FileDataHandler.Save(GameData);
     }
 

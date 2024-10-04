@@ -6369,6 +6369,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FileName: data.game
+  BonusCost: 2000
 --- !u!4 &242147482
 Transform:
   m_ObjectHideFlags: 0
@@ -41846,6 +41847,7 @@ MonoBehaviour:
   - {fileID: 968091106}
   CanvasToHide:
   - {fileID: 549919853}
+  - {fileID: 2145158546}
   SpawnTime: 1
   TimeToFirstSpawn: 5
   player: {fileID: 780065064}

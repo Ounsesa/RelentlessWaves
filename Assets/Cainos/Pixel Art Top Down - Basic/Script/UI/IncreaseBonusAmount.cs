@@ -4,12 +4,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class IncreaseBonusAmount : MonoBehaviour, IDataPersistence
+public class IncreaseBonusAmount : MonoBehaviour
 {
     public GameObject BonusAmountButton;
     public GameObject CostText;
-
-    private int CurrentCost = 2000;
 
     private void Awake()
     {
@@ -18,16 +16,8 @@ public class IncreaseBonusAmount : MonoBehaviour, IDataPersistence
 
     private void Start()
     {
-        CostText.GetComponent<TextMeshProUGUI>().text = CurrentCost.ToString();
+        CostText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.BonusCost.ToString();
         BonusAmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpController.m_instance.NumberOfValues.ToString();
-    }
-    public void LoadData(GameData data)
-    {
-        CurrentCost = data.BonusCost;
-    }
-    public void SaveData(ref GameData data)
-    {
-        data.BonusCost = CurrentCost;
     }
 
     private void OnBonusAmountButtonPressed()
@@ -42,13 +32,13 @@ public class IncreaseBonusAmount : MonoBehaviour, IDataPersistence
 
     private bool ManageCosts()
     {
-        if (CurrentCost > SpawnerController.m_instance.Score)
+        if (DataPersistenceManager.instance.BonusCost > SpawnerController.m_instance.Score)
         {
             return false;
         }
-        SpawnerController.m_instance.SpendScore(CurrentCost);
-        CurrentCost *= 10;
-        CostText.GetComponent<TextMeshProUGUI>().text = CurrentCost.ToString();
+        SpawnerController.m_instance.SpendScore(DataPersistenceManager.instance.BonusCost);
+        DataPersistenceManager.instance.BonusCost *= 10;
+        CostText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.BonusCost.ToString();
 
         return true;
     }

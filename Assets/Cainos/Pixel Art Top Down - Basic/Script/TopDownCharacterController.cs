@@ -421,7 +421,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {        
         if(Add)
         {
-            WeaponNumber += weapons;
+            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameManager.m_instance.m_gameplayManager.MaxWeapons);
 
             WeaponGO.SetActive(true);
 
