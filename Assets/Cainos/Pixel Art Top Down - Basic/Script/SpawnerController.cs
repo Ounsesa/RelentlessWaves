@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using TMPro;
 using UnityEditorInternal.Profiling.Memory.Experimental.FileFormat;
@@ -20,12 +21,12 @@ public enum EnemyTypes
 public class EnemyValues
 {
     public float health;
-    public float damage;
+    public int damage;
     public float speed;
     public float dropChance;
     public int scoreOnDeath;
 
-    public EnemyValues(float health, float damage, float speed, float dropChance, int scoreOnDeath)
+    public EnemyValues(float health, int damage, float speed, float dropChance, int scoreOnDeath)
     {
         this.health = health;
         this.damage = damage;
@@ -74,7 +75,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     Vector2 BottomRight = new Vector2(18f,-12f);
 
     #region WaveController
-    private int WaveNumber = 1;
+    public int WaveNumber = 1;
     private int EnemiesPerWave = 6;
     private bool IsWaveActive = false;
     private float InitialDecreaseInSpawnRatePerWave = 0.1f;
@@ -101,6 +102,37 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         m_instance = this;
     }
 
+    public void Restart()
+    {
+        IEnumerable<EnemyController> dataPersistencesObjects = FindObjectsOfType<EnemyController>();
+        foreach(EnemyController enemy in  dataPersistencesObjects)
+        {
+            enemy.EnemyPool?.Release(enemy);
+        }
+        IEnumerable<Bullet> bullets = FindObjectsOfType<Bullet>();
+        foreach(Bullet bullet in bullets)
+        {
+            try
+            {
+                bullet.BulletPool?.Release(bullet);
+            }
+            catch
+            {
+
+            }
+        }
+        IEnumerable<PowerUp> powers = FindObjectsOfType<PowerUp>();
+        foreach(PowerUp power in powers)
+        {
+            Destroy(power.gameObject);
+        }
+
+        WaveNumber = 1;
+        EnemiesPerWave = 6;
+        GamePauseManager.ResumeGame();
+
+    }
+
     private void Start()
     {
 
@@ -115,7 +147,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             int EnemyIndex = int.Parse(entry[0]);
             EnemyTypes EnemyType = (EnemyTypes)EnemyIndex;
 
-            EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), float.Parse(entry[2]), float.Parse(entry[3]), float.Parse(entry[4]), int.Parse(entry[5]));
+            EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), int.Parse(entry[2]), float.Parse(entry[3]), float.Parse(entry[4]), int.Parse(entry[5]));
             enemyValues.Add(EnemyType, EnemyValue);
         }
         
@@ -125,10 +157,13 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     public void LoadData(GameData data)
     {
         WaveNumber = data.WaveNumber;
+        Score = data.Score;
+        ScoreText.AddScore(Score);
     }
     public void SaveData(ref GameData data)
     {
         data.WaveNumber = WaveNumber;
+        data.Score = Score;
     }
 
     public void StartNewWave()
@@ -248,8 +283,11 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             EnemiesKilledWithoutDrop = 0;
             PowerUpController.m_instance.SpawnPowerUp(enemy.transform.position);
         }
-        Score += enemy.scoreOnDeath;
-        ScoreText.AddScore(enemy.scoreOnDeath);
+        if(player.health > 0)
+        {
+            Score += enemy.scoreOnDeath;
+            ScoreText.AddScore(enemy.scoreOnDeath);
+        }
         enemy.gameObject.SetActive(false);
 
         EnemiesRemaining--;

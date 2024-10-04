@@ -19,6 +19,13 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     private Animator animator;
 
     [SerializeField]
+    private HealthBar HealthBar;
+    [SerializeField]
+    private GameObject EndGameScreen;
+    [SerializeField]
+    private GameObject WaveCanvas;
+
+    [SerializeField]
     private StatsGrid statsGrid;
 
     [SerializeField]
@@ -43,11 +50,21 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     #endregion
 
-    public int health = 10;
+    public int health = 20;
 
+    private bool CanTakeDamage = true;
+    private float InvulnerabilityTime = 1f;
+
+    public void Restart()
+    {
+        transform.position = new Vector3(0,0,0);
+        health = 20;
+        HealthBar.SetHealth(health);
+    }
     public void LoadData(GameData data)
     {
         health = data.PlayerHealth;
+        HealthBar.SetHealth(health);
     }
     public void SaveData(ref GameData data)
     {
@@ -197,6 +214,8 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Aim()
     {
+        if(health <= 0)
+        { return; }
         // Get the mouse position in world space
         Vector3 MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
@@ -350,6 +369,50 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
             // Set the position in world space, relative to the player's position
             Weapon.transform.position = transform.position + weaponPosition + Vector3.up * radius;
 
+        }
+    }
+
+    private void TakeDamage(int damage)
+    {
+        if(CanTakeDamage && health > 0)
+        {
+            health -= damage;
+            HealthBar.SetHealth(health);
+            CanTakeDamage = false;
+            Invoke("RemuveInvulnerability", InvulnerabilityTime);
+
+            if(health <= 0)
+            {
+                EndGame();
+            }
+        }
+    }
+
+    private void EndGame()
+    {
+        WaveCanvas.SetActive(false);
+        EndGameScreen.SetActive(true);
+        GamePauseManager.PauseGame();
+    }
+
+    private void RemuveInvulnerability()
+    {
+        CanTakeDamage = true;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.CompareTag("Enemy"))
+        {
+            TakeDamage(collision.gameObject.GetComponent<EnemyController>().damage);
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            TakeDamage(collision.gameObject.GetComponent<EnemyController>().damage);
         }
     }
 

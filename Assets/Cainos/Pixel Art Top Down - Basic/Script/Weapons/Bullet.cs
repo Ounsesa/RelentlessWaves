@@ -52,7 +52,7 @@ public class Bullet : MonoBehaviour
     bool BallEnded = false;
 
 
-    private IObjectPool<Bullet> BulletPool;
+    public IObjectPool<Bullet> BulletPool;
 
     public void SetPool(IObjectPool<Bullet> pool) { BulletPool = pool; }
 

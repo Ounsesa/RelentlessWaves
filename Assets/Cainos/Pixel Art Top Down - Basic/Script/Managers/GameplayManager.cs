@@ -32,4 +32,5 @@ public class GameplayManager: MonoBehaviour
         GameManager.m_instance.m_gameplayManager = this;
         m_inputManager = new InputManager();
     }
+
 }

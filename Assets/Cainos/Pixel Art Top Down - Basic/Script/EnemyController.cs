@@ -11,7 +11,7 @@ public class EnemyController : MonoBehaviour
     private float InitialHealth = 1;
     private GameObject player;
     public float speed = 0.005f;
-    public float damage = 1;
+    public int damage = 1;
     Animator animator;
     BoxCollider2D boxCollider;
 
@@ -26,7 +26,7 @@ public class EnemyController : MonoBehaviour
     public int scoreOnDeath = 0;
 
 
-    private IObjectPool<EnemyController> EnemyPool;
+    public IObjectPool<EnemyController> EnemyPool;
 
     public void SetPool(IObjectPool<EnemyController> pool) {  EnemyPool = pool; }
 
