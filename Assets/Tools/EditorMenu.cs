@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class EditorMenu : MonoBehaviour
+#if UNITY_EDITOR
+public class EditorMenu
 {
     [MenuItem("Tools/Data Window")]
     public static void OpenPowerUpDataWindow()
@@ -11,3 +12,4 @@ public class EditorMenu : MonoBehaviour
         PowerUpDataWindow.InitWindow();
     }
 }
+#endif

@@ -28,6 +28,9 @@ public class InputManager : Manager
         _playerActions[(int)playerID].m_buttonLeftAttack = player.actions.FindAction(_actionsName.m_buttonLeftAttack);
         _playerActions[(int)playerID].m_buttonChangeMeleeWeapon = player.actions.FindAction(_actionsName.m_buttonChangeMeleeWeapon);
         _playerActions[(int)playerID].m_buttonChangeRangeWeapon = player.actions.FindAction(_actionsName.m_buttonChangeRangeWeapon);
+        _playerActions[(int)playerID].m_buttonAimGamepad = player.actions.FindAction(_actionsName.m_buttonAimGamepad);
+        _playerActions[(int)playerID].m_buttonMovementGamepad = player.actions.FindAction(_actionsName.m_buttonMovementGamepad);
+        _playerActions[(int)playerID].m_buttonPause = player.actions.FindAction(_actionsName.m_buttonPause);
         
         return _playerActions[(int)playerID];
     }
@@ -48,6 +51,9 @@ public class InputActions
     public InputAction m_buttonLeftAttack;
     public InputAction m_buttonChangeMeleeWeapon;
     public InputAction m_buttonChangeRangeWeapon;
+    public InputAction m_buttonAimGamepad;
+    public InputAction m_buttonMovementGamepad;
+    public InputAction m_buttonPause;
     #endregion
 }
 [System.Serializable]
@@ -62,4 +68,7 @@ public struct ActionsName
     public string m_buttonLeftAttack;
     public string m_buttonChangeMeleeWeapon;
     public string m_buttonChangeRangeWeapon;
+    public string m_buttonAimGamepad;
+    public string m_buttonMovementGamepad;
+    public string m_buttonPause;
 }

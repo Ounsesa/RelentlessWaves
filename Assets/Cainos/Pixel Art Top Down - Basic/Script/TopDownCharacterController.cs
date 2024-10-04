@@ -25,6 +25,9 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     [SerializeField]
     private GameObject WaveCanvas;
 
+    private Vector3 LastMousePosition;
+    private Vector3 LastGamePadPosition;
+
     [SerializeField]
     private StatsGrid statsGrid;
 
@@ -33,6 +36,8 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     [HideInInspector]
     public GameObject m_interactObject;
+
+    public GameObject MainMenuCanvas;
 
     public GameObject bulletGameObject;
 
@@ -210,20 +215,57 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         Movement();
         Aim();
+        Pause();
+    }
+
+    private void Pause()
+    {
+        if(_input.m_buttonPause.triggered && transform.position != Vector3.zero)
+        {
+            if (MainMenuCanvas.activeSelf)
+            {
+                GamePauseManager.ResumeGame();
+                MainMenuCanvas.SetActive(false);
+            }
+            else
+            {
+                GamePauseManager.PauseGame();
+                MainMenuCanvas.SetActive(true);
+            }
+        }
+
     }
 
     private void Aim()
     {
         if(health <= 0)
         { return; }
-        // Get the mouse position in world space
-        Vector3 MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        // Get the player's position
-        Vector3 PlayerPosition = transform.position;
+        Vector3 DirectionToMouse = Vector3.zero;
+        Vector2 GamepadMovement = _input.m_buttonAimGamepad.ReadValue<Vector2>();
+        if(GamepadMovement != Vector2.zero)
+        {
+            DirectionToMouse = GamepadMovement;
+            LastMousePosition = Input.mousePosition;
+            LastGamePadPosition = GamepadMovement;
+        }
+        else if(Input.mousePosition != LastMousePosition)
+        { 
+            // Get the mouse position in world space
+            Vector3 MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        // Calculate the direction from the player to the mouse
-        Vector3 DirectionToMouse = MouseWorldPosition - PlayerPosition;
+            // Get the player's position
+            Vector3 PlayerPosition = transform.position;
+
+            // Calculate the direction from the player to the mouse
+            DirectionToMouse = MouseWorldPosition - PlayerPosition;
+        }
+        else
+        {
+            DirectionToMouse = LastGamePadPosition;
+        }
+
+        
 
         // Calculate the angle between the player and the mouse in degrees
         float Angle = Mathf.Atan2(DirectionToMouse.y, DirectionToMouse.x) * Mathf.Rad2Deg;
@@ -278,7 +320,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Movement()
     {
-        Vector2 dir = Vector2.zero;
+        Vector2 dir = _input.m_buttonMovementGamepad.ReadValue<Vector2>();
         if (_input.m_buttonLeft.IsPressed())
         {
             dir.x = -1;

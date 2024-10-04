@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86;
 
 enum CSVWindow
 {
@@ -11,6 +10,7 @@ enum CSVWindow
     PowerUpStats,
 }
 
+#if UNITY_EDITOR
 public class PowerUpDataWindow : EditorWindow
 {
     static PowerUpDataWindow window;
@@ -229,3 +229,5 @@ public class PowerUpDataWindow : EditorWindow
         EditorGUILayout.EndVertical();
     }
 }
+
+#endif

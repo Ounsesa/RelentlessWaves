@@ -44,6 +44,7 @@ public class EnemyController : MonoBehaviour
         {
             if (transform.position.x - player.transform.position.x > 0) { transform.rotation = Quaternion.Euler(0, 180, 0); }
             else { transform.rotation = Quaternion.Euler(0, 0, 0); }
+            transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
         }
 
     }

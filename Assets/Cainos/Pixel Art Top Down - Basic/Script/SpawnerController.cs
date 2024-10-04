@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using TMPro;
-using UnityEditorInternal.Profiling.Memory.Experimental.FileFormat;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Pool;
@@ -151,7 +150,6 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             enemyValues.Add(EnemyType, EnemyValue);
         }
         
-        StartNewWave();
     }
 
     public void LoadData(GameData data)
@@ -222,7 +220,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         enemy.gameObject.SetActive(true);
         Vector3 spawnPosition = Vector3.zero;
         RandomSpawnPoint(player.transform.position, spawnRange, spawnRange + 2, out spawnPosition);
-
+        Debug.Log(spawnPosition);
         enemy.transform.position = spawnPosition;
         enemy.Respawn();
         EnemiesSpawned++;
@@ -246,17 +244,12 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             randomPoint.x = Mathf.Clamp(randomPoint.x, TopLeft.x, BottomRight.x);
             randomPoint.y = Mathf.Clamp(randomPoint.y, BottomRight.y, TopLeft.y);
 
-            // Check if the clamped point is valid on the NavMesh
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
+            // Check if the position is safe using the IsPositionSafe method
+            if (IsPositionSafe(randomPoint, 0.5f))
             {
-                // Check if the position is safe using the IsPositionSafe method
-                if (IsPositionSafe(hit.position, 0.5f))
-                {
-                    spawnPosition = hit.position;
-                    spawnPosition.z = 0f; // Ensure z position is zero
-                    return; // Valid position found
-                }
+                spawnPosition = randomPoint;
+                spawnPosition.z = 0f; // Ensure z position is zero
+                return; // Valid position found
             }
         }
 
