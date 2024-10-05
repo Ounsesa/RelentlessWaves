@@ -44,7 +44,10 @@ public class MainMenuScript : MonoBehaviour
             go.SetActive(false);
         }
 
-        SpawnerController.m_instance.StartNewWave();
+        if(!SpawnerController.m_instance.IsWaveActive)
+        {
+            SpawnerController.m_instance.StartNewWave();
+        }
     }
 
     private void OnGuideButtonPressed()

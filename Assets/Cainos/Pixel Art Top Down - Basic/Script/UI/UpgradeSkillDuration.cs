@@ -26,7 +26,7 @@ public class UpgradeSkillDuration : MonoBehaviour
         PowerUpData = PowerUpController.m_instance.GetPowerUpData(PowerUpType);
         if (PowerUpData != null)
         {
-            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString();
+            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
             CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
         }
     }
@@ -54,7 +54,7 @@ public class UpgradeSkillDuration : MonoBehaviour
             return;
         }
         PowerUpData.powerUpDuration += PowerUpData.powerUpUpgradeDuration;
-        DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString();
+        DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
     }
 
     private bool ManageCosts()

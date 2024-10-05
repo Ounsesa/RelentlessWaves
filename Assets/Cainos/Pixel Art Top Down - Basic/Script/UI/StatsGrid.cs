@@ -31,7 +31,7 @@ public class StatsGrid : MonoBehaviour
     [SerializeField] private GameObject PiercingValueTextNew;
 
     [SerializeField] private TopDownCharacterController Player;
-    [SerializeField] private float DelayTime = 1;
+    [SerializeField] private float DelayTime = 2;
 
 
     // Start is called before the first frame update
@@ -39,31 +39,46 @@ public class StatsGrid : MonoBehaviour
     {
     }
 
+    public void RemoveNewTexts()
+    {
+        SpeedValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        WeaponsValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        DamageValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        DamageMultiplierValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        ShootCadencyValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        RangeValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        BulletSpeedValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        SizeValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        FollowerValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        ExplodesValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+        PiercingValueTextNew.GetComponent<TextMeshProUGUI>().text = "";
+    }
+
     public void InitGrid()
     {
         TextMeshProUGUI textMeshPro = SpeedValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.speed.ToString();        
+        textMeshPro.text = Player.speed.ToString("F2");        
 
         textMeshPro = WeaponsValueText.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = Player.WeaponNumber.ToString();
 
         textMeshPro = DamageValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Damage.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Damage.ToString("F2");
 
         textMeshPro = DamageMultiplierValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().DamageMultiplier.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().DamageMultiplier.ToString("F2");
 
         textMeshPro = ShootCadencyValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.ShootCadency.ToString();
+        textMeshPro.text = Player.ShootCadency.ToString("F2");
 
         textMeshPro = RangeValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Range.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Range.ToString("F2");
 
         textMeshPro = BulletSpeedValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Speed.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Speed.ToString("F2");
 
         textMeshPro = SizeValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Size.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Size.ToString("F2");
 
         textMeshPro = FollowerValueText.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = "No";
@@ -98,11 +113,11 @@ public class StatsGrid : MonoBehaviour
     private void SetSpeedValues(float value)
     {
         TextMeshProUGUI textMeshPro = SpeedValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.speed.ToString();
+        textMeshPro.text = Player.speed.ToString("F2");
 
         textMeshPro = SpeedValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, SpeedValueTextNew));
     }
 
@@ -120,66 +135,66 @@ public class StatsGrid : MonoBehaviour
     private void SetDamageValues(float value)
     {
         TextMeshProUGUI textMeshPro = DamageValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Damage.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Damage.ToString("F2");
 
         textMeshPro = DamageValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, DamageValueTextNew));
     }
 
     private void SetDamageMultiplierValues(float value)
     {
         TextMeshProUGUI textMeshPro = DamageMultiplierValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().DamageMultiplier.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().DamageMultiplier.ToString("F2");
 
         textMeshPro = DamageMultiplierValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, DamageMultiplierValueTextNew));
     }
 
     private void SetShootCadencyValues(float value)
     {
         TextMeshProUGUI textMeshPro = ShootCadencyValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.ShootCadency.ToString();
+        textMeshPro.text = Player.ShootCadency.ToString("F2");
 
         textMeshPro = ShootCadencyValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, ShootCadencyValueTextNew));
     }
 
     private void SetRangeValues(float value)
     {
         TextMeshProUGUI textMeshPro = RangeValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Range.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Range.ToString("F2");
 
         textMeshPro = RangeValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, RangeValueTextNew));
     }
 
     private void SetBulletSpeedValues(float value)
     {
         TextMeshProUGUI textMeshPro = BulletSpeedValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Speed.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Speed.ToString("F2");
 
         textMeshPro = BulletSpeedValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, BulletSpeedValueTextNew));
     }
 
     private void SetSizeValues(float value)
     {
         TextMeshProUGUI textMeshPro = SizeValueText.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Size.ToString();
+        textMeshPro.text = Player.bulletGameObject.GetComponent<Bullet>().Size.ToString("F2");
 
         textMeshPro = SizeValueTextNew.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = value > 0 ? "+ " : "";
-        textMeshPro.text += value.ToString();
+        textMeshPro.text += value.ToString("F2");
         StartCoroutine(DelayedHideText(DelayTime, SizeValueTextNew));
     }
 

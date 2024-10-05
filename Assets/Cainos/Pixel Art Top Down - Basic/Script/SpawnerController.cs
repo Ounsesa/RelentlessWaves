@@ -47,6 +47,8 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     private List<GameObject> CanvasToShow;
     [SerializeField]
     private List<GameObject> CanvasToHide;
+    [SerializeField]
+    private StatsGrid StatsGrid;
 
     public IObjectPool<EnemyController> EnemyPool;
 
@@ -76,7 +78,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     #region WaveController
     public int WaveNumber = 1;
     private int EnemiesPerWave = 6;
-    private bool IsWaveActive = false;
+    public bool IsWaveActive = false;
     private float InitialDecreaseInSpawnRatePerWave = 0.1f;
     private float DecreaseInSpawnRatePerWave = 0.1f;
 
@@ -128,6 +130,14 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
         WaveNumber = 1;
         EnemiesPerWave = 6;
+        foreach (GameObject go in CanvasToShow)
+        {
+            go.SetActive(true);
+        }
+        foreach (GameObject go in CanvasToHide)
+        {
+            go.SetActive(false);
+        }
         GamePauseManager.ResumeGame();
 
     }
@@ -288,7 +298,9 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
         if (EnemiesRemaining <= 0)
         {
-            foreach(GameObject go in CanvasToShow)
+            IsWaveActive = false;
+            StatsGrid.RemoveNewTexts();
+            foreach (GameObject go in CanvasToShow)
             {
                 go.SetActive(true);
             }

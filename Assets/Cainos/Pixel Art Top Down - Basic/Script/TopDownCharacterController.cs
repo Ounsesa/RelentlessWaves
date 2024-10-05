@@ -23,6 +23,8 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     [SerializeField]
     private GameObject EndGameScreen;
     [SerializeField]
+    private GameObject DamageScreen;
+    [SerializeField]
     private GameObject WaveCanvas;
 
     private Vector3 LastMousePosition;
@@ -69,6 +71,12 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     public void LoadData(GameData data)
     {
         health = data.PlayerHealth;
+        if(health <= 0)
+        {
+            health = 20;
+            EndGame();
+        }
+
         HealthBar.SetHealth(health);
     }
     public void SaveData(ref GameData data)
@@ -166,7 +174,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                     bulletGameObject.GetComponent<Bullet>().Piercing = outInt == 1 ? true : false;
                     break;
                 case 11:
-                    health = int.Parse(PlayerDataLine[1]);
+                    //health = int.Parse(PlayerDataLine[1]);
                     break;
             }
 
@@ -198,12 +206,15 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         while (true)
         {
-            for (int i = 0; i < WeaponNumber; i++)
+            if(health > 0)
             {
-                Bullet bullet = bulletPool.Get();
-                bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
-                bullet.Direction = WeaponList[i].transform.right;
+                for (int i = 0; i < WeaponNumber; i++)
+                {
+                    Bullet bullet = bulletPool.Get();
+                    bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
+                    bullet.Direction = WeaponList[i].transform.right;
 
+                }
             }
             yield return new WaitForSeconds(ShootCadency);
         }
@@ -421,6 +432,8 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
             health -= damage;
             HealthBar.SetHealth(health);
             CanTakeDamage = false;
+            DamageScreen.SetActive(true);
+            Invoke("RemoveDamageScreen", 0.25f);
             Invoke("RemuveInvulnerability", InvulnerabilityTime);
 
             if(health <= 0)
@@ -430,11 +443,15 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         }
     }
 
+    private void RemoveDamageScreen()
+    {
+        DamageScreen.SetActive(false);
+    }
+
     private void EndGame()
     {
         WaveCanvas.SetActive(false);
         EndGameScreen.SetActive(true);
-        GamePauseManager.PauseGame();
     }
 
     private void RemuveInvulnerability()
@@ -477,8 +494,8 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         }
         else 
         {
-            WeaponNumber += weapons;
-            for(int i =0; i< -weapons; i++)
+            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameManager.m_instance.m_gameplayManager.MaxWeapons);
+            for (int i =0; i< -weapons; i++)
             {
                 GameObject WeaponToRemove = WeaponList[0];
                 WeaponList.Remove(WeaponToRemove);

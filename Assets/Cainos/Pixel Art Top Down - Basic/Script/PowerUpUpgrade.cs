@@ -29,8 +29,8 @@ public class PowerUpUpgrade : MonoBehaviour
         PowerUpData = PowerUpController.m_instance.GetPowerUpData(PowerUpType);
         if(PowerUpData != null)
         {
-            AmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpAmount.ToString();
-            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString();
+            AmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpAmount.ToString("F2");
+            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
             CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
         }
     }
@@ -51,7 +51,7 @@ public class PowerUpUpgrade : MonoBehaviour
             case "Damage":
                 PowerUpType = PowerUpEnum.Damage;
                 break;
-            case "Multiplier":
+            case "Damage Multiplier":
                 PowerUpType = PowerUpEnum.DamageMultiplier;
                 break;
             case "Range":
