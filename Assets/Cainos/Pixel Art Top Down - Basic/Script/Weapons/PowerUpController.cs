@@ -6,15 +6,14 @@ using UnityEngine;
 
 public class PowerUpController : MonoBehaviour, IDataPersistence
 {
-    public static PowerUpController m_instance;
-    public string ResourceName = "PowerUpData";
-
+    #region Variables
+    public static PowerUpController instance;
+    public string resourceName = "PowerUpData";
     public GameObject powerUpGO;
-    public TopDownCharacterController m_characterController;
+    public int numberOfValues = 1;
 
-    public int NumberOfValues = 1;
-
-    List<PowerUpValues> PowerUpValuesData = new List<PowerUpValues>();
+    private List<PowerUpValues> m_powerUpValuesData = new List<PowerUpValues>();
+    #endregion
 
 
     #region Delegates
@@ -33,33 +32,33 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
     void Awake()
     {
-        if (m_instance != null)
+        if (instance != null)
         {
-            Destroy(m_instance.gameObject);
+            Destroy(instance.gameObject);
         }
         DontDestroyOnLoad(this.gameObject);
 
-        m_instance = this;
+        instance = this;
 
     }
 
     public void InitializeFromCSV()
     {
-        CSVParser.ParseStringListToPowerUpValuesList(ResourceName, out PowerUpValuesData);
+        CSVParser.ParseStringListToPowerUpValuesList(resourceName, out m_powerUpValuesData);
     }
 
     public void LoadData(GameData data)
     {
         if(data.powerUpValuesList.Count > 0)
         {
-            PowerUpValuesData = data.powerUpValuesList;
+            m_powerUpValuesData = data.powerUpValuesList;
         }
-        NumberOfValues = data.NumberOfPowerUpValues;
+        numberOfValues = data.NumberOfPowerUpValues;
     }
     public void SaveData(ref GameData data)
     {
-        data.powerUpValuesList = PowerUpValuesData;
-        data.NumberOfPowerUpValues = NumberOfValues;
+        data.powerUpValuesList = m_powerUpValuesData;
+        data.NumberOfPowerUpValues = numberOfValues;
     }
 
     public void SpawnPowerUp(Vector3 position)
@@ -69,14 +68,10 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
         List<PowerUpValues> valuesForThisPowerUp = new List<PowerUpValues>();
 
-        for(int i = 0; i < NumberOfValues; i++) 
+        for(int i = 0; i < numberOfValues; i++) 
         {
-            PowerUpValues randomValue = PowerUpValuesData[UnityEngine.Random.Range(0, PowerUpValuesData.Count)];
-
-            // Assuming PowerUpValues is a class, create a deep copy if needed (using a copy constructor or manual copy)
+            PowerUpValues randomValue = m_powerUpValuesData[UnityEngine.Random.Range(0, m_powerUpValuesData.Count)];
             PowerUpValues copiedValue = new PowerUpValues(randomValue);
-
-            // Add the copied value to the list
             valuesForThisPowerUp.Add(copiedValue);
         }
 
@@ -146,10 +141,7 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
     public IEnumerator DelayedFunction<T>(float delayTime, Action<T> functionToCall, T parameter)
     {
-        // Wait for the specified delay time
         yield return new WaitForSeconds(delayTime);
-
-        // Call the function with the passed parameter
         functionToCall(parameter);
     }
 
@@ -173,7 +165,7 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
     public PowerUpValues GetPowerUpData(PowerUpEnum powerUpType)
     {
-        foreach (PowerUpValues powerUpData in PowerUpValuesData)
+        foreach (PowerUpValues powerUpData in m_powerUpValuesData)
         {
             if (powerUpData.powerUpValue == powerUpType)
             {

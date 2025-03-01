@@ -2,35 +2,43 @@ using Cainos.PixelArtTopDown_Basic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GameplayManager: MonoBehaviour
 {
     #region Managers
-    public InputManager m_inputManager;
+    public static GameplayManager instance;
+    public InputManager inputManager;
     #endregion
 
     #region Properties
     [Header("Inputs")]
-    public ActionsName _actionsName;
+    public ActionsName actionsName;
     #endregion
 
     #region References
     [Header("Players")]
-    public TopDownCharacterController[] m_players;
+    public TopDownCharacterController player;
 
     #endregion
 
     #region PlayerLimits
     [SerializeField]
-    public int MaxWeapons = 20;
+    public int maxWeapons = 20;
     [SerializeField]
-    public float MinShootCadency = 0.1f;
+    public float minShootCadency = 0.1f;
     #endregion
 
-    private void Awake()
+    void Awake()
     {
-        GameManager.m_instance.m_gameplayManager = this;
-        m_inputManager = new InputManager();
+        if (instance != null)
+        {
+            Destroy(instance.gameObject);
+        }
+        DontDestroyOnLoad(this.gameObject);
+
+        instance = this;
+        inputManager = new InputManager();
     }
 
 }

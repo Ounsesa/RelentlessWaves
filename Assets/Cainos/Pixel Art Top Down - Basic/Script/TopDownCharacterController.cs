@@ -86,12 +86,13 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Start()
     {
+        GameManager.instance.onRestartPressed.AddListener(Restart);
         InitPlayer();
 
         animator = GetComponent<Animator>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
-        _input = GameManager.m_instance.m_gameplayManager.m_inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
+        _input = GameplayManager.instance.inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
 
 
         bulletPool = new ObjectPool<Bullet>(InstantiateBullet, OnGet, OnRelease);
@@ -103,6 +104,12 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
 
         Invoke("StartShootCoroutine", ShootCadency);
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.instance.onRestartPressed.RemoveListener(Restart);
+        StopAllCoroutines();
     }
 
     private Bullet InstantiateBullet()
@@ -184,17 +191,17 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void BindDelegates()
     {
-        PowerUpController.m_instance.OnSpeedPicked += AddSpeed;
-        PowerUpController.m_instance.OnSizePicked += AddBulletSize;
-        PowerUpController.m_instance.OnExplosionPicked += SetExplosion;
-        PowerUpController.m_instance.OnFollowerPicked += SetFollower;
-        PowerUpController.m_instance.OnDamagePicked += AddDamage;
-        PowerUpController.m_instance.OnDamageMultiplierPicked += AddDamageMultiplier;
-        PowerUpController.m_instance.OnBulletSpeedPicked += AddBulletSpeed;
-        PowerUpController.m_instance.OnNewWeaponPicked += AddWeapon;
-        PowerUpController.m_instance.OnShootCadencyPicked += ReduceShootCadency;
-        PowerUpController.m_instance.OnPiercingPicked += SetPiercing;
-        PowerUpController.m_instance.OnRangePicked += AddRange;
+        PowerUpController.instance.OnSpeedPicked += AddSpeed;
+        PowerUpController.instance.OnSizePicked += AddBulletSize;
+        PowerUpController.instance.OnExplosionPicked += SetExplosion;
+        PowerUpController.instance.OnFollowerPicked += SetFollower;
+        PowerUpController.instance.OnDamagePicked += AddDamage;
+        PowerUpController.instance.OnDamageMultiplierPicked += AddDamageMultiplier;
+        PowerUpController.instance.OnBulletSpeedPicked += AddBulletSpeed;
+        PowerUpController.instance.OnNewWeaponPicked += AddWeapon;
+        PowerUpController.instance.OnShootCadencyPicked += ReduceShootCadency;
+        PowerUpController.instance.OnPiercingPicked += SetPiercing;
+        PowerUpController.instance.OnRangePicked += AddRange;
     }
 
     private void StartShootCoroutine()
@@ -231,7 +238,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Pause()
     {
-        if(_input.m_buttonPause.triggered && transform.position != Vector3.zero)
+        if(_input.buttonPause.triggered && transform.position != Vector3.zero)
         {
             if (MainMenuCanvas.activeSelf)
             {
@@ -253,7 +260,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         { return; }
 
         Vector3 DirectionToMouse = Vector3.zero;
-        Vector2 GamepadMovement = _input.m_buttonAimGamepad.ReadValue<Vector2>();
+        Vector2 GamepadMovement = _input.buttonAimGamepad.ReadValue<Vector2>();
         if(GamepadMovement != Vector2.zero)
         {
             DirectionToMouse = GamepadMovement;
@@ -331,23 +338,23 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Movement()
     {
-        Vector2 dir = _input.m_buttonMovementGamepad.ReadValue<Vector2>();
-        if (_input.m_buttonLeft.IsPressed())
+        Vector2 dir = _input.buttonMovementGamepad.ReadValue<Vector2>();
+        if (_input.buttonLeft.IsPressed())
         {
             dir.x = -1;
             lookingDirection = new Vector2(-1, 0);
         }
-        else if (_input.m_buttonRight.IsPressed())
+        else if (_input.buttonRight.IsPressed())
         {
             dir.x = 1;
             lookingDirection = new Vector2(1, 0);
         }
 
-        if (_input.m_buttonUp.IsPressed())
+        if (_input.buttonUp.IsPressed())
         {
             dir.y = 1;
         }
-        else if (_input.m_buttonDown.IsPressed())
+        else if (_input.buttonDown.IsPressed())
         {
             dir.y = -1;
         }
@@ -480,7 +487,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {        
         if(Add)
         {
-            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameManager.m_instance.m_gameplayManager.MaxWeapons);
+            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
 
             WeaponGO.SetActive(true);
 
@@ -494,7 +501,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         }
         else 
         {
-            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameManager.m_instance.m_gameplayManager.MaxWeapons);
+            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
             for (int i =0; i< -weapons; i++)
             {
                 GameObject WeaponToRemove = WeaponList[0];
@@ -515,7 +522,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         //If the shoot cadency is 0.1, it won't lower more, but it will register the up reset of the power up, so picking this power up in 0.1 is bad
 
-        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameManager.m_instance.m_gameplayManager.MinShootCadency, 1);
+        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameplayManager.instance.minShootCadency, 1);
     }
 
     public void AddDamage(float amount)
@@ -565,43 +572,3 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-//private void AvoidCorners()
-//{
-//    RaycastHit2D UpLeftRay = Physics2D.Raycast(transform.position + new Vector3(-0.2f, 0.25f, 0), Vector2.up, 0.01f, LayerMask.NameToLayer(gameObject.tag));
-//    RaycastHit2D UpRightRay = Physics2D.Raycast(transform.position + new Vector3(0.2f, 0.25f, 0), Vector2.up, 0.01f, LayerMask.NameToLayer(gameObject.tag));
-//    if (UpLeftRay.collider != null)
-//    {
-//        if (UpLeftRay.collider.gameObject.GetComponent<BoxCollider2D>() && !UpLeftRay.collider.gameObject.GetComponent<BoxCollider2D>().isTrigger)
-//        {
-//            print(UpLeftRay.collider.gameObject.name);
-//            print("Hit");
-//        }
-
-//    }
-//    if (UpRightRay.collider != null)
-//    {
-//        if (UpRightRay.collider.gameObject.GetComponent<BoxCollider2D>() && !UpRightRay.collider.gameObject.GetComponent<BoxCollider2D>().isTrigger)
-//        {
-//            print(UpRightRay.collider.gameObject.name);
-//            print("Hit2");
-//        }
-//    }
-
-
-//    Debug.DrawRay(transform.position + new Vector3(-0.2f, 0.25f, 0), Vector2.up * 0.5f, Color.red, 1);
-//    Debug.DrawRay(transform.position + new Vector3(0.2f, 0.25f, 0), Vector2.up * 0.5f, Color.red, 1);
-
-
-
-//}

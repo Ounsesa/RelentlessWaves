@@ -8,67 +8,52 @@ using static Utils;
 
 public class InputManager : Manager
 {
-    private InputActions[] _playerActions;
+    private InputActions[] m_playerActions;
 
     public InputActions RegsiterInputActionsPlayer(PlayerInput player, Utils.Players playerID )
     {
-        if (_playerActions == null)
+        if (m_playerActions == null)
         {
-            _playerActions = new InputActions[Utils.PLAYERS_NUM];
+            m_playerActions = new InputActions[Utils.PLAYERS_NUM];
         }
-        _playerActions[(int)playerID] = new InputActions();
+        m_playerActions[(int)playerID] = new InputActions();
 
-        ActionsName _actionsName = GameManager.m_instance.m_gameplayManager._actionsName;
-        _playerActions[(int)playerID].m_buttonUp = player.actions.FindAction(_actionsName.m_buttonUp);
-        _playerActions[(int)playerID].m_buttonDown = player.actions.FindAction(_actionsName.m_buttonDown);
-        _playerActions[(int)playerID].m_buttonRight = player.actions.FindAction(_actionsName.m_buttonRight);
-        _playerActions[(int)playerID].m_buttonLeft = player.actions.FindAction(_actionsName.m_buttonLeft);
-        _playerActions[(int)playerID].m_buttonInteract = player.actions.FindAction(_actionsName.m_buttonInteract);
-        _playerActions[(int)playerID].m_buttonRightAttack = player.actions.FindAction(_actionsName.m_buttonRightAttack);
-        _playerActions[(int)playerID].m_buttonLeftAttack = player.actions.FindAction(_actionsName.m_buttonLeftAttack);
-        _playerActions[(int)playerID].m_buttonChangeMeleeWeapon = player.actions.FindAction(_actionsName.m_buttonChangeMeleeWeapon);
-        _playerActions[(int)playerID].m_buttonChangeRangeWeapon = player.actions.FindAction(_actionsName.m_buttonChangeRangeWeapon);
-        _playerActions[(int)playerID].m_buttonAimGamepad = player.actions.FindAction(_actionsName.m_buttonAimGamepad);
-        _playerActions[(int)playerID].m_buttonMovementGamepad = player.actions.FindAction(_actionsName.m_buttonMovementGamepad);
-        _playerActions[(int)playerID].m_buttonPause = player.actions.FindAction(_actionsName.m_buttonPause);
+        ActionsName _actionsName = GameplayManager.instance.actionsName;
+        m_playerActions[(int)playerID].buttonUp = player.actions.FindAction(_actionsName.buttonUp);
+        m_playerActions[(int)playerID].buttonDown = player.actions.FindAction(_actionsName.buttonDown);
+        m_playerActions[(int)playerID].buttonRight = player.actions.FindAction(_actionsName.buttonRight);
+        m_playerActions[(int)playerID].buttonLeft = player.actions.FindAction(_actionsName.buttonLeft);
+        m_playerActions[(int)playerID].buttonAimGamepad = player.actions.FindAction(_actionsName.buttonAimGamepad);
+        m_playerActions[(int)playerID].buttonMovementGamepad = player.actions.FindAction(_actionsName.buttonMovementGamepad);
+        m_playerActions[(int)playerID].buttonPause = player.actions.FindAction(_actionsName.buttonPause);
         
-        return _playerActions[(int)playerID];
+        return m_playerActions[(int)playerID];
     }
     public InputActions GetPlayerInputAction(Utils.Players playerID)
     {
-        return _playerActions[(int)playerID];
+        return m_playerActions[(int)playerID];
     }
 }
 public class InputActions
 {
     #region Properties
-    public InputAction m_buttonUp;
-    public InputAction m_buttonDown;
-    public InputAction m_buttonRight;
-    public InputAction m_buttonLeft;
-    public InputAction m_buttonInteract;
-    public InputAction m_buttonRightAttack;
-    public InputAction m_buttonLeftAttack;
-    public InputAction m_buttonChangeMeleeWeapon;
-    public InputAction m_buttonChangeRangeWeapon;
-    public InputAction m_buttonAimGamepad;
-    public InputAction m_buttonMovementGamepad;
-    public InputAction m_buttonPause;
+    public InputAction buttonUp;
+    public InputAction buttonDown;
+    public InputAction buttonRight;
+    public InputAction buttonLeft;
+    public InputAction buttonAimGamepad;
+    public InputAction buttonMovementGamepad;
+    public InputAction buttonPause;
     #endregion
 }
 [System.Serializable]
 public struct ActionsName
 {
-    public string m_buttonUp;
-    public string m_buttonDown;
-    public string m_buttonRight;
-    public string m_buttonLeft;
-    public string m_buttonInteract;
-    public string m_buttonRightAttack;
-    public string m_buttonLeftAttack;
-    public string m_buttonChangeMeleeWeapon;
-    public string m_buttonChangeRangeWeapon;
-    public string m_buttonAimGamepad;
-    public string m_buttonMovementGamepad;
-    public string m_buttonPause;
+    public string buttonUp;
+    public string buttonDown;
+    public string buttonRight;
+    public string buttonLeft;
+    public string buttonAimGamepad;
+    public string buttonMovementGamepad;
+    public string buttonPause;
 }

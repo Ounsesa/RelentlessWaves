@@ -5,18 +5,18 @@ using UnityEngine;
 
 public class DataPersistenceManager : MonoBehaviour
 {
+    #region Variables
+    public int bonusCost = 2000;
+    public static DataPersistenceManager instance;
+
     [Header("File Storage Config")]
     [SerializeField]
-    private string FileName;
+    private string m_fileName;
+    private FileDataHandler m_fileDataHandler;
+    private GameData m_gameData = null;
+    private List<IDataPersistence> m_dataPersistences = new List<IDataPersistence>();
+    #endregion
 
-    private FileDataHandler FileDataHandler;
-
-    private GameData GameData = null;
-    private List<IDataPersistence> dataPersistences = new List<IDataPersistence>();
-
-    public int BonusCost = 2000;
-
-    public static DataPersistenceManager instance;
     void Awake()
     {
         if (instance != null)
@@ -30,43 +30,43 @@ public class DataPersistenceManager : MonoBehaviour
 
     private void Start()
     {
-        FileDataHandler = new FileDataHandler(Application.persistentDataPath, FileName);
-        dataPersistences = FindAllDataPersistenceObjects();
+        m_fileDataHandler = new FileDataHandler(Application.persistentDataPath, m_fileName);
+        m_dataPersistences = FindAllDataPersistenceObjects();
         LoadGame();
     }
 
     public void NewGame()
     {
-        GameData = new GameData();
-
-        PowerUpController.m_instance.InitializeFromCSV();
+        m_gameData = new GameData();
+        PowerUpController.instance.InitializeFromCSV();
     }
 
     public void LoadGame()
     {
-        GameData = FileDataHandler.Load();
+        m_gameData = m_fileDataHandler.Load();
 
-        if(GameData == null)
+        if(m_gameData == null)
         {
             NewGame();
         }
 
-        foreach(IDataPersistence persistence in dataPersistences)
+        foreach(IDataPersistence persistence in m_dataPersistences)
         {
-            persistence.LoadData(GameData);
+            persistence.LoadData(m_gameData);
         }
-        BonusCost = GameData.BonusCost;
+
+        bonusCost = m_gameData.BonusCost;
     }
 
     public void SaveGame()
     {
-        foreach (IDataPersistence persistence in dataPersistences)
+        foreach (IDataPersistence persistence in m_dataPersistences)
         {
-            persistence.SaveData(ref GameData);
+            persistence.SaveData(ref m_gameData);
         }
 
-        GameData.BonusCost = BonusCost;
-        FileDataHandler.Save(GameData);
+        m_gameData.BonusCost = bonusCost;
+        m_fileDataHandler.Save(m_gameData);
     }
 
     private void OnApplicationQuit()
@@ -77,7 +77,6 @@ public class DataPersistenceManager : MonoBehaviour
     private List<IDataPersistence> FindAllDataPersistenceObjects() 
     { 
         IEnumerable<IDataPersistence> dataPersistencesObjects = FindObjectsOfType<MonoBehaviour>().OfType<IDataPersistence>();
-
         return new List<IDataPersistence>(dataPersistencesObjects);
     }
 }

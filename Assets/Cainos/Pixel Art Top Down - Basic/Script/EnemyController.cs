@@ -7,44 +7,46 @@ using UnityEngine.Pool;
 
 public class EnemyController : MonoBehaviour
 {
+    #region Variables
+    [SerializeField]
+    public EnemyTypes enemyType;
     public float health = 1;
-    private float InitialHealth = 1;
-    private GameObject player;
     public float speed = 0.005f;
     public int damage = 1;
-    Animator animator;
-    BoxCollider2D boxCollider;
-
-    [SerializeField]
-    public EnemyTypes EnemyType;
-
-    private bool Dead = false;
-
     public float dropChance = 0;
     public int scoreOnDeath = 0;
+    public IObjectPool<EnemyController> enemyPool;
+
+    private float m_initialHealth = 1;
+    private GameObject m_player;
+    private Animator m_animator;
+    private BoxCollider2D m_boxCollider;
+    private bool m_dead = false;
 
 
-    public IObjectPool<EnemyController> EnemyPool;
 
-    public void SetPool(IObjectPool<EnemyController> pool) {  EnemyPool = pool; }
+
+    #endregion
+
+    public void SetPool(IObjectPool<EnemyController> pool) {  enemyPool = pool; }
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
-        animator = GetComponent<Animator>();
-        boxCollider= GetComponent<BoxCollider2D>();
+        m_player = GameplayManager.instance.player.gameObject;
+        m_animator = GetComponent<Animator>();
+        m_boxCollider= GetComponent<BoxCollider2D>();
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!Dead)
+        if (!m_dead)
         {
-            if (transform.position.x - player.transform.position.x > 0) { transform.rotation = Quaternion.Euler(0, 180, 0); }
+            if (transform.position.x - m_player.transform.position.x > 0) { transform.rotation = Quaternion.Euler(0, 180, 0); }
             else { transform.rotation = Quaternion.Euler(0, 0, 0); }
-            transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, m_player.transform.position, speed * Time.deltaTime);
         }
 
     }
@@ -52,26 +54,26 @@ public class EnemyController : MonoBehaviour
     public void Init(EnemyValues enemyValues)
     {
         speed = enemyValues.speed;
-        InitialHealth = enemyValues.health;
         damage = enemyValues.damage;
         dropChance = enemyValues.dropChance;
         scoreOnDeath = enemyValues.scoreOnDeath;
+        m_initialHealth = enemyValues.health;
     }
 
     public void TakeDamage(float damage)
     {
-        if(Dead)
+        if(m_dead)
         {
             return;
         }
         health -= damage;
-        animator.SetTrigger("Hit");
+        m_animator.SetTrigger("Hit");
 
         if (health <= 0)
         {
-            Dead = true;
-            animator.SetBool("Dead", true);
-            boxCollider.enabled = false;
+            m_dead = true;
+            m_animator.SetBool("Dead", true);
+            m_boxCollider.enabled = false;
 
             Invoke("RegisterDead", 2);
 
@@ -80,8 +82,8 @@ public class EnemyController : MonoBehaviour
 
     public void Respawn()
     {
-        health = InitialHealth;
-        Dead = false;
+        health = m_initialHealth;
+        m_dead = false;
         GetComponent<BoxCollider2D>().enabled = true;
     }
 
@@ -89,11 +91,11 @@ public class EnemyController : MonoBehaviour
     {
         try
         {
-            EnemyPool.Release(this);
+            enemyPool.Release(this);
         }
         catch
         {
-
+            Debug.LogError("Enemy Already Released From Pool");
         }
     }
 }

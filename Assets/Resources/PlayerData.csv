@@ -1,6 +1,6 @@
 Stat;InitialValue
 Weapons;1
-Speed;3
+Speed;3,5
 ShootCadency;1
 Damage;5
 DamageMultiplier;1

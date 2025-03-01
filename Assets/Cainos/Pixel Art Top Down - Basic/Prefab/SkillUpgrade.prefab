@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8619486006174799077}
   - component: {fileID: 4658893994007361366}
-  - component: {fileID: 2523089894569957659}
+  - component: {fileID: 3878643422595481542}
   m_Layer: 0
   m_Name: SkillUpgrade
   m_TagString: Untagged
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 3
---- !u!114 &2523089894569957659
+--- !u!114 &3878643422595481542
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -74,20 +74,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2361314088423817823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d37c15681cd4804ca1a75fdfae9d7c8, type: 3}
+  m_Script: {fileID: 11500000, guid: 2cc4e7d8d6b44b240b12528012d152a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PowerUpText: {fileID: 6059915646172859318}
-  DurationButton: {fileID: 4720120331386974691}
-  CostText: {fileID: 4610511123612841591}
-  PowerUpType: 0
-  PowerUpData:
-    powerUpValue: 0
-    powerUpAmount: 10
-    powerUpDuration: 5
-    powerUpCostUpgrade: 100
-    powerUpUpgradeAmount: 1
-    powerUpUpgradeDuration: 1
+  bonusAmountButton: {fileID: 4720120331386974691}
+  costText: {fileID: 4610511123612841591}
 --- !u!1 &3574475084162809010
 GameObject:
   m_ObjectHideFlags: 0

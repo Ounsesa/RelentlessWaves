@@ -6,43 +6,43 @@ using UnityEngine.UI;
 
 public class UpgradeSkillDuration : MonoBehaviour
 {
-    public GameObject PowerUpText;
-    public GameObject DurationButton;
-    public GameObject CostText;
-
-    public PowerUpEnum PowerUpType;
-
-    public PowerUpValues PowerUpData;
+    #region Variables
+    [SerializeField] private GameObject m_powerUpText;
+    [SerializeField] private GameObject m_durationButton;
+    [SerializeField] private GameObject m_costText;
+    private PowerUpEnum m_powerUpType;
+    private PowerUpValues m_powerUpData;
+    #endregion
 
 
     private void Awake()
     {
-        DurationButton.GetComponent<Button>().onClick.AddListener(OnDurationButtonPressed);
+        m_durationButton.GetComponent<Button>().onClick.AddListener(OnDurationButtonPressed);
     }
 
     private void Start()
     {
         SetPowerUpType();
-        PowerUpData = PowerUpController.m_instance.GetPowerUpData(PowerUpType);
-        if (PowerUpData != null)
+        m_powerUpData = PowerUpController.instance.GetPowerUpData(m_powerUpType);
+        if (m_powerUpData != null)
         {
-            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
-            CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
+            m_durationButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpDuration.ToString("F2");
+            m_costText.GetComponent<TextMeshProUGUI>().text = m_powerUpData.powerUpCostUpgrade.ToString();
         }
     }
 
     private void SetPowerUpType()
     {
-        switch (PowerUpText.GetComponent<TextMeshProUGUI>().text)
+        switch (m_powerUpText.GetComponent<TextMeshProUGUI>().text)
         {
             case "Follower":
-                PowerUpType = PowerUpEnum.Follower;
+                m_powerUpType = PowerUpEnum.Follower;
                 break;
             case "Explosion":
-                PowerUpType = PowerUpEnum.Explodes;
+                m_powerUpType = PowerUpEnum.Explodes;
                 break;
             case "Piercing":
-                PowerUpType = PowerUpEnum.Piercing;
+                m_powerUpType = PowerUpEnum.Piercing;
                 break;            
         }
     }
@@ -53,19 +53,19 @@ public class UpgradeSkillDuration : MonoBehaviour
         {
             return;
         }
-        PowerUpData.powerUpDuration += PowerUpData.powerUpUpgradeDuration;
-        DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
+        m_powerUpData.powerUpDuration += m_powerUpData.powerUpUpgradeDuration;
+        m_durationButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpDuration.ToString("F2");
     }
 
     private bool ManageCosts()
     {
-        if (PowerUpData.powerUpCostUpgrade > SpawnerController.m_instance.Score)
+        if (m_powerUpData.powerUpCostUpgrade > SpawnerController.instance.score)
         {
             return false;
         }
-        SpawnerController.m_instance.SpendScore(PowerUpData.powerUpCostUpgrade);
-        PowerUpData.powerUpCostUpgrade *= 2;
-        CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
+        SpawnerController.instance.SpendScore(m_powerUpData.powerUpCostUpgrade);
+        m_powerUpData.powerUpCostUpgrade *= 2;
+        m_costText.GetComponent<TextMeshProUGUI>().text = m_powerUpData.powerUpCostUpgrade.ToString();
 
         return true;
     }

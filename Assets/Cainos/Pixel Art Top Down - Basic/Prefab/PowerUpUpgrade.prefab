@@ -213,10 +213,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b28ef242de1dbc74db5250e06797207d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PowerUpText: {fileID: 8862242535759393795}
-  AmountButton: {fileID: 6950435111249044477}
-  DurationButton: {fileID: 6712496696036702161}
-  CostText: {fileID: 6708740565710564186}
+  m_powerUpText: {fileID: 8862242535759393795}
+  m_amountButton: {fileID: 6950435111249044477}
+  m_durationButton: {fileID: 6712496696036702161}
+  m_costText: {fileID: 6708740565710564186}
 --- !u!1 &6708740565710564186
 GameObject:
   m_ObjectHideFlags: 0

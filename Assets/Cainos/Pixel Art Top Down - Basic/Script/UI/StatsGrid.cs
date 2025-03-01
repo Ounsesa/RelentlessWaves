@@ -96,17 +96,17 @@ public class StatsGrid : MonoBehaviour
     // Bind event listeners to PowerUpController events
     private void BindDelegates()
     {
-        PowerUpController.m_instance.OnSpeedPicked += SetSpeedValues;
-        PowerUpController.m_instance.OnNewWeaponPicked += SetWeaponsValues;
-        PowerUpController.m_instance.OnDamagePicked += SetDamageValues;
-        PowerUpController.m_instance.OnDamageMultiplierPicked += SetDamageMultiplierValues;
-        PowerUpController.m_instance.OnShootCadencyPicked += SetShootCadencyValues;
-        PowerUpController.m_instance.OnRangePicked += SetRangeValues;
-        PowerUpController.m_instance.OnBulletSpeedPicked += SetBulletSpeedValues;
-        PowerUpController.m_instance.OnSizePicked += SetSizeValues;
-        PowerUpController.m_instance.OnFollowerPicked += SetFollowerValues;
-        PowerUpController.m_instance.OnExplosionPicked += SetExplodesValues;
-        PowerUpController.m_instance.OnPiercingPicked += SetPiercingValues;
+        PowerUpController.instance.OnSpeedPicked += SetSpeedValues;
+        PowerUpController.instance.OnNewWeaponPicked += SetWeaponsValues;
+        PowerUpController.instance.OnDamagePicked += SetDamageValues;
+        PowerUpController.instance.OnDamageMultiplierPicked += SetDamageMultiplierValues;
+        PowerUpController.instance.OnShootCadencyPicked += SetShootCadencyValues;
+        PowerUpController.instance.OnRangePicked += SetRangeValues;
+        PowerUpController.instance.OnBulletSpeedPicked += SetBulletSpeedValues;
+        PowerUpController.instance.OnSizePicked += SetSizeValues;
+        PowerUpController.instance.OnFollowerPicked += SetFollowerValues;
+        PowerUpController.instance.OnExplosionPicked += SetExplodesValues;
+        PowerUpController.instance.OnPiercingPicked += SetPiercingValues;
     }
 
     // Update methods for each stat

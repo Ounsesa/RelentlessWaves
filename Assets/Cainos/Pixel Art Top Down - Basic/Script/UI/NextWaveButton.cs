@@ -5,10 +5,13 @@ using UnityEngine.UI;
 
 public class NextWaveButton : MonoBehaviour
 {
+    #region Variables
     [SerializeField]
-    private List<GameObject> CanvasToHide;
+    private List<GameObject> m_canvasToHide;
     [SerializeField]
-    private List<GameObject> CanvasToShow;
+    private List<GameObject> m_canvasToShow;
+    #endregion
+
     private void Awake()
     {
         GetComponent<Button>().onClick.AddListener(StartNewWave);
@@ -16,13 +19,13 @@ public class NextWaveButton : MonoBehaviour
 
     private void StartNewWave()
     {
-        SpawnerController.m_instance.StartNewWave();
+        SpawnerController.instance.StartNewWave();
 
-        foreach (GameObject go in CanvasToHide) 
+        foreach (GameObject go in m_canvasToHide) 
         {
             go.SetActive(false);
         }
-        foreach (GameObject go in CanvasToShow) 
+        foreach (GameObject go in m_canvasToShow) 
         {
             go.SetActive(true);
         }

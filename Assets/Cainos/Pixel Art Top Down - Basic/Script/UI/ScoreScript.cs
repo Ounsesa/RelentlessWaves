@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class ScoreScript : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;  // Reference to the Text component displaying the score
-    private int score = 0;   // Initial score
+    private int m_score = 0;   // Initial score
 
     void Start()
     {
@@ -16,13 +16,13 @@ public class ScoreScript : MonoBehaviour
 
     public void AddScore(int amount)
     {
-        score += amount;    // Add to the score
+        m_score += amount;    // Add to the score
         UpdateScoreText();  // Update the displayed score
     }
 
     void UpdateScoreText()
     {
         // Convert the score to a string, padded with leading zeros, with a total length of 11
-        scoreText.text = score.ToString().PadLeft(11, '0');
+        scoreText.text = m_score.ToString().PadLeft(11, '0');
     }
 }

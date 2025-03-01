@@ -7,61 +7,61 @@ using UnityEngine.UI;
 
 public class PowerUpUpgrade : MonoBehaviour
 {
-    public GameObject PowerUpText;
-    public GameObject AmountButton;
-    public GameObject DurationButton;
-    public GameObject CostText;
-
-    public PowerUpEnum PowerUpType;
-
-    public PowerUpValues PowerUpData;
+    #region Variables
+    [SerializeField] private GameObject m_powerUpText;
+    [SerializeField] private GameObject m_amountButton;
+    [SerializeField] private GameObject m_durationButton;
+    [SerializeField] private GameObject m_costText;
+    private PowerUpEnum m_powerUpType;
+    private PowerUpValues m_powerUpData;
+    #endregion
 
 
     private void Awake()
     {
-        AmountButton.GetComponent<Button>().onClick.AddListener(OnAmountButtonPressed);
-        DurationButton.GetComponent<Button>().onClick.AddListener(OnDurationButtonPressed);
+        m_amountButton.GetComponent<Button>().onClick.AddListener(OnAmountButtonPressed);
+        m_durationButton.GetComponent<Button>().onClick.AddListener(OnDurationButtonPressed);
     }
 
     private void Start()
     {
         SetPowerUpType();
-        PowerUpData = PowerUpController.m_instance.GetPowerUpData(PowerUpType);
-        if(PowerUpData != null)
+        m_powerUpData = PowerUpController.instance.GetPowerUpData(m_powerUpType);
+        if(m_powerUpData != null)
         {
-            AmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpAmount.ToString("F2");
-            DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString("F2");
-            CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
+            m_amountButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpAmount.ToString("F2");
+            m_durationButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpDuration.ToString("F2");
+            m_costText.GetComponent<TextMeshProUGUI>().text = m_powerUpData.powerUpCostUpgrade.ToString();
         }
     }
 
     private void SetPowerUpType()
     {
-        switch (PowerUpText.GetComponent<TextMeshProUGUI>().text)
+        switch (m_powerUpText.GetComponent<TextMeshProUGUI>().text)
         {
             case "Weapons":
-                PowerUpType = PowerUpEnum.NewWeapon;
+                m_powerUpType = PowerUpEnum.NewWeapon;
                 break;
             case "Speed":
-                PowerUpType = PowerUpEnum.Speed;
+                m_powerUpType = PowerUpEnum.Speed;
                 break;
             case "Cadency":
-                PowerUpType = PowerUpEnum.ShootCadency;
+                m_powerUpType = PowerUpEnum.ShootCadency;
                 break;
             case "Damage":
-                PowerUpType = PowerUpEnum.Damage;
+                m_powerUpType = PowerUpEnum.Damage;
                 break;
             case "Damage Multiplier":
-                PowerUpType = PowerUpEnum.DamageMultiplier;
+                m_powerUpType = PowerUpEnum.DamageMultiplier;
                 break;
             case "Range":
-                PowerUpType = PowerUpEnum.Range;
+                m_powerUpType = PowerUpEnum.Range;
                 break;
             case "BulletSpeed":
-                PowerUpType = PowerUpEnum.BulletSpeed;
+                m_powerUpType = PowerUpEnum.BulletSpeed;
                 break;
             case "Size":
-                PowerUpType = PowerUpEnum.Size;
+                m_powerUpType = PowerUpEnum.Size;
                 break;
         }
     }
@@ -72,8 +72,8 @@ public class PowerUpUpgrade : MonoBehaviour
         {
             return;
         }
-        PowerUpData.powerUpAmount += PowerUpData.powerUpUpgradeAmount;
-        AmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpAmount.ToString(); 
+        m_powerUpData.powerUpAmount += m_powerUpData.powerUpUpgradeAmount;
+        m_amountButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpAmount.ToString(); 
     }
 
     private void OnDurationButtonPressed()
@@ -82,19 +82,19 @@ public class PowerUpUpgrade : MonoBehaviour
         {
             return;
         }
-        PowerUpData.powerUpDuration += PowerUpData.powerUpUpgradeDuration;
-        DurationButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpData.powerUpDuration.ToString();
+        m_powerUpData.powerUpDuration += m_powerUpData.powerUpUpgradeDuration;
+        m_durationButton.GetComponentInChildren<TextMeshProUGUI>().text = m_powerUpData.powerUpDuration.ToString();
     }
 
     private bool ManageCosts()
     {
-        if (PowerUpData.powerUpCostUpgrade > SpawnerController.m_instance.Score)
+        if (m_powerUpData.powerUpCostUpgrade > SpawnerController.instance.score)
         {
             return false;
         }
-        SpawnerController.m_instance.SpendScore(PowerUpData.powerUpCostUpgrade);
-        PowerUpData.powerUpCostUpgrade *= 2;
-        CostText.GetComponent<TextMeshProUGUI>().text = PowerUpData.powerUpCostUpgrade.ToString();
+        SpawnerController.instance.SpendScore(m_powerUpData.powerUpCostUpgrade);
+        m_powerUpData.powerUpCostUpgrade *= 2;
+        m_costText.GetComponent<TextMeshProUGUI>().text = m_powerUpData.powerUpCostUpgrade.ToString();
 
         return true;
     }

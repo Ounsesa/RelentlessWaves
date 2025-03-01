@@ -37,70 +37,65 @@ public class EnemyValues
 
 public class SpawnerController : MonoBehaviour, IDataPersistence
 {
+
+    #region Variables
+    public static SpawnerController instance;
     public List<GameObject> enemyPrefabs;
-
-    Dictionary<EnemyTypes, EnemyValues> enemyValues = new Dictionary<EnemyTypes, EnemyValues>();
-
-    [SerializeField]
-    private string EnemiesDataFileName = "EnemiesData";
-    [SerializeField]
-    private List<GameObject> CanvasToShow;
-    [SerializeField]
-    private List<GameObject> CanvasToHide;
-    [SerializeField]
-    private StatsGrid StatsGrid;
-
-    public IObjectPool<EnemyController> EnemyPool;
+    public IObjectPool<EnemyController> enemyPool;
+    public int score = 0;
 
     [SerializeField]
-    private float SpawnTime = 1;
+    private string m_enemiesDataFileName = "EnemiesData";
     [SerializeField]
-    private float TimeToFirstSpawn = 5;
-
-    List<string[]> EnemiesListData = new List<string[]>();
-
+    private List<GameObject> m_canvasToShow;
     [SerializeField]
-    private TopDownCharacterController player;
+    private List<GameObject> m_canvasToHide;
     [SerializeField]
-    private ScoreScript ScoreText;
+    private StatsGrid m_statsGrid;
     [SerializeField]
-    private float spawnRange = 10;
-
-
+    private float m_spawnTime = 1;
     [SerializeField]
-    private GameObject WaveText;
+    private float m_timeToFirstSpawn = 5;
     [SerializeField]
-    private GameObject EnemiesRemainingText;
-
-    Vector2 TopLeft = new Vector2(-10f, 17f);
-    Vector2 BottomRight = new Vector2(18f,-12f);
+    private TopDownCharacterController m_player;
+    [SerializeField]
+    private ScoreScript m_scoreText;
+    [SerializeField]
+    private float m_spawnRange = 10;
+    [SerializeField]
+    private GameObject m_waveText;
+    [SerializeField]
+    private GameObject m_enemiesRemainingText;
+    private List<string[]> m_enemiesListData = new List<string[]>();
+    private Dictionary<EnemyTypes, EnemyValues> m_enemyValues = new Dictionary<EnemyTypes, EnemyValues>();
+    //World Dimensions
+    private Vector2 m_topLeftCorner = new Vector2(-10f, 17f);
+    private Vector2 m_bottomRightCorner = new Vector2(18f,-12f);
 
     #region WaveController
-    public int WaveNumber = 1;
-    private int EnemiesPerWave = 6;
-    public bool IsWaveActive = false;
-    private float InitialDecreaseInSpawnRatePerWave = 0.1f;
-    private float DecreaseInSpawnRatePerWave = 0.1f;
+    public int waveNumber = 1;
+    public bool isWaveActive = false;
 
-    private int EnemiesRemaining = 0;
-    private int EnemiesSpawned = 0;
-    private float CurrentSpawnTime = 0;
-
-    private int EnemiesKilledWithoutDrop = 0;
+    private float m_initialDecreaseInSpawnRatePerWave = 0.1f;
+    private float m_decreaseInSpawnRatePerWave = 0.1f;
+    private int m_enemiesPerWave = 6;
+    private int m_enemiesRemaining = 0;
+    private int m_enemiesSpawned = 0;
+    private float m_currentSpawnTime = 0;
+    private int m_enemiesKilledWithoutDrop = 0;
     #endregion
 
-    public static SpawnerController m_instance;
 
-    public int Score = 0;
+    #endregion
     void Awake()
     {
-        if (m_instance != null)
+        if (instance != null)
         {
-            Destroy(m_instance.gameObject);
+            Destroy(instance.gameObject);
         }
         DontDestroyOnLoad(this.gameObject);
 
-        m_instance = this;
+        instance = this;
     }
 
     public void Restart()
@@ -108,7 +103,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         IEnumerable<EnemyController> dataPersistencesObjects = FindObjectsOfType<EnemyController>();
         foreach(EnemyController enemy in  dataPersistencesObjects)
         {
-            enemy.EnemyPool?.Release(enemy);
+            enemy.enemyPool?.Release(enemy);
         }
         IEnumerable<Bullet> bullets = FindObjectsOfType<Bullet>();
         foreach(Bullet bullet in bullets)
@@ -128,13 +123,13 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             Destroy(power.gameObject);
         }
 
-        WaveNumber = 1;
-        EnemiesPerWave = 6;
-        foreach (GameObject go in CanvasToShow)
+        waveNumber = 1;
+        m_enemiesPerWave = 6;
+        foreach (GameObject go in m_canvasToShow)
         {
             go.SetActive(true);
         }
-        foreach (GameObject go in CanvasToHide)
+        foreach (GameObject go in m_canvasToHide)
         {
             go.SetActive(false);
         }
@@ -144,48 +139,55 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     private void Start()
     {
+        GameManager.instance.onRestartPressed.AddListener(Restart);
 
-        EnemyPool = new ObjectPool<EnemyController>(SpawnEnemyFromPool, OnGet, OnRelease);
+        enemyPool = new ObjectPool<EnemyController>(SpawnEnemyFromPool, OnGet, OnRelease);
 
-        Invoke("StartSpawningCoroutine", TimeToFirstSpawn);
+        Invoke("StartSpawningCoroutine", m_timeToFirstSpawn);
 
-        EnemiesListData = CSVParser.ParseCSVToStringList(EnemiesDataFileName);
-        EnemiesListData.RemoveAt(0);
-        foreach (string[] entry in EnemiesListData)
+        m_enemiesListData = CSVParser.ParseCSVToStringList(m_enemiesDataFileName);
+        m_enemiesListData.RemoveAt(0);
+        foreach (string[] entry in m_enemiesListData)
         {
             int EnemyIndex = int.Parse(entry[0]);
             EnemyTypes EnemyType = (EnemyTypes)EnemyIndex;
 
             EnemyValues EnemyValue = new EnemyValues(float.Parse(entry[1]), int.Parse(entry[2]), float.Parse(entry[3]), float.Parse(entry[4]), int.Parse(entry[5]));
-            enemyValues.Add(EnemyType, EnemyValue);
+            m_enemyValues.Add(EnemyType, EnemyValue);
         }
         
     }
 
+    private void OnDestroy()
+    {
+        GameManager.instance.onRestartPressed.RemoveListener(Restart);
+        StopAllCoroutines();
+    }
+
     public void LoadData(GameData data)
     {
-        WaveNumber = data.WaveNumber;
-        Score = data.Score;
-        ScoreText.AddScore(Score);
+        waveNumber = data.WaveNumber;
+        score = data.Score;
+        m_scoreText.AddScore(score);
     }
     public void SaveData(ref GameData data)
     {
-        data.WaveNumber = WaveNumber;
-        data.Score = Score;
+        data.WaveNumber = waveNumber;
+        data.Score = score;
     }
 
     public void StartNewWave()
     {
-        WaveText.GetComponent<TextMeshProUGUI>().text = WaveNumber.ToString();
-        EnemiesRemaining = WaveNumber * EnemiesPerWave;
-        EnemiesRemainingText.GetComponent<TextMeshProUGUI>().text = EnemiesRemaining.ToString();
-        DecreaseInSpawnRatePerWave = InitialDecreaseInSpawnRatePerWave * WaveNumber;
-        CurrentSpawnTime = Mathf.Clamp(SpawnTime - DecreaseInSpawnRatePerWave, 0.1f, SpawnTime);
-        EnemiesSpawned = 0;
+        m_waveText.GetComponent<TextMeshProUGUI>().text = waveNumber.ToString();
+        m_enemiesRemaining = waveNumber * m_enemiesPerWave;
+        m_enemiesRemainingText.GetComponent<TextMeshProUGUI>().text = m_enemiesRemaining.ToString();
+        m_decreaseInSpawnRatePerWave = m_initialDecreaseInSpawnRatePerWave * waveNumber;
+        m_currentSpawnTime = Mathf.Clamp(m_spawnTime - m_decreaseInSpawnRatePerWave, 0.1f, m_spawnTime);
+        m_enemiesSpawned = 0;
 
-        Debug.Log(CurrentSpawnTime);
+        Debug.Log(m_currentSpawnTime);
 
-        IsWaveActive = true;
+        isWaveActive = true;
         GamePauseManager.ResumeGame();
     }
 
@@ -219,8 +221,8 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
         GameObject enemyGO = Instantiate(enemyPrefab);
         EnemyController enemy = enemyGO.GetComponent<EnemyController>();
-        enemy.Init(enemyValues[enemy.EnemyType]);
-        enemy.SetPool(EnemyPool);
+        enemy.Init(m_enemyValues[enemy.enemyType]);
+        enemy.SetPool(enemyPool);
 
         return enemy;
     }
@@ -229,11 +231,11 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
     {
         enemy.gameObject.SetActive(true);
         Vector3 spawnPosition = Vector3.zero;
-        RandomSpawnPoint(player.transform.position, spawnRange, spawnRange + 2, out spawnPosition);
+        RandomSpawnPoint(m_player.transform.position, m_spawnRange, m_spawnRange + 2, out spawnPosition);
         Debug.Log(spawnPosition);
         enemy.transform.position = spawnPosition;
         enemy.Respawn();
-        EnemiesSpawned++;
+        m_enemiesSpawned++;
     }
 
     private void RandomSpawnPoint(Vector3 playerPosition, float minRange, float maxRange, out Vector3 spawnPosition)
@@ -251,8 +253,8 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
 
             // Clamp the point within the map bounds (TopLeft and BottomRight)
-            randomPoint.x = Mathf.Clamp(randomPoint.x, TopLeft.x, BottomRight.x);
-            randomPoint.y = Mathf.Clamp(randomPoint.y, BottomRight.y, TopLeft.y);
+            randomPoint.x = Mathf.Clamp(randomPoint.x, m_topLeftCorner.x, m_bottomRightCorner.x);
+            randomPoint.y = Mathf.Clamp(randomPoint.y, m_bottomRightCorner.y, m_topLeftCorner.y);
 
             // Check if the position is safe using the IsPositionSafe method
             if (IsPositionSafe(randomPoint, 0.5f))
@@ -279,39 +281,39 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     private void OnRelease(EnemyController enemy)
     {
-        EnemiesKilledWithoutDrop++;
+        m_enemiesKilledWithoutDrop++;
         float randomValue = Random.Range(0f, 1f);
-        if (randomValue / EnemiesKilledWithoutDrop < enemy.dropChance)
+        if (randomValue / m_enemiesKilledWithoutDrop < enemy.dropChance)
         {
-            EnemiesKilledWithoutDrop = 0;
-            PowerUpController.m_instance.SpawnPowerUp(enemy.transform.position);
+            m_enemiesKilledWithoutDrop = 0;
+            PowerUpController.instance.SpawnPowerUp(enemy.transform.position);
         }
-        if(player.health > 0)
+        if(m_player.health > 0)
         {
-            Score += enemy.scoreOnDeath;
-            ScoreText.AddScore(enemy.scoreOnDeath);
+            score += enemy.scoreOnDeath;
+            m_scoreText.AddScore(enemy.scoreOnDeath);
         }
         enemy.gameObject.SetActive(false);
 
-        EnemiesRemaining--;
-        EnemiesRemainingText.GetComponent<TextMeshProUGUI>().text = EnemiesRemaining.ToString();
+        m_enemiesRemaining--;
+        m_enemiesRemainingText.GetComponent<TextMeshProUGUI>().text = m_enemiesRemaining.ToString();
 
-        if (EnemiesRemaining <= 0)
+        if (m_enemiesRemaining <= 0)
         {
-            IsWaveActive = false;
-            StatsGrid.RemoveNewTexts();
-            foreach (GameObject go in CanvasToShow)
+            isWaveActive = false;
+            m_statsGrid.RemoveNewTexts();
+            foreach (GameObject go in m_canvasToShow)
             {
                 go.SetActive(true);
             }
-            foreach(GameObject go in CanvasToHide)
+            foreach(GameObject go in m_canvasToHide)
             {
                 go.SetActive(false);
             }
-            WaveNumber++;
-            if(WaveNumber >= 10)
+            waveNumber++;
+            if(waveNumber >= 10)
             {
-                EnemiesPerWave = 10;
+                m_enemiesPerWave = 10;
             }
             GamePauseManager.PauseGame();
         }
@@ -319,8 +321,8 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     public void SpendScore(int ScoreToSpend)
     {
-        Score -= ScoreToSpend;
-        ScoreText.AddScore(-ScoreToSpend);
+        score -= ScoreToSpend;
+        m_scoreText.AddScore(-ScoreToSpend);
     }
 
 
@@ -335,12 +337,12 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         while (true)
         {
 
-            if (EnemiesSpawned < WaveNumber * EnemiesPerWave)
+            if (m_enemiesSpawned < waveNumber * m_enemiesPerWave)
             {
-                EnemyPool.Get();
+                enemyPool.Get();
             }
             
-            yield return new WaitForSeconds(CurrentSpawnTime);
+            yield return new WaitForSeconds(m_currentSpawnTime);
         }
     }
 

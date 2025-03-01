@@ -54,7 +54,7 @@ public class PowerUp : MonoBehaviour
     {
         if(collision.gameObject.tag == "Player")
         {
-            PowerUpController.m_instance.RegisterPowerUpPicked(this);
+            PowerUpController.instance.RegisterPowerUpPicked(this);
             Destroy(gameObject);
         }
 

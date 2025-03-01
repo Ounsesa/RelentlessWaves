@@ -44,9 +44,9 @@ public class MainMenuScript : MonoBehaviour
             go.SetActive(false);
         }
 
-        if(!SpawnerController.m_instance.IsWaveActive)
+        if(!SpawnerController.instance.isWaveActive)
         {
-            SpawnerController.m_instance.StartNewWave();
+            SpawnerController.instance.StartNewWave();
         }
     }
 

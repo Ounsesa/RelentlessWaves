@@ -7,29 +7,29 @@ using UnityEngine.UI;
 public class EndGameCanvas : MonoBehaviour
 {
     [SerializeField]
-    TopDownCharacterController player;
+    private GameObject m_diedText;
     [SerializeField]
-    GameObject DiedText;
+    private GameObject m_restartButton;
     [SerializeField]
-    GameObject RestartButton;
-    [SerializeField]
-    GameObject WaveText;
+    private GameObject m_waveText;
+
+
+
 
 
     void Awake()
     {
-        RestartButton.GetComponent<Button>().onClick.AddListener(OnRestartPressed);
+        m_restartButton.GetComponent<Button>().onClick.AddListener(OnRestartPressed);
     }
 
     private void Start()
     {
-        WaveText.GetComponent<TextMeshProUGUI>().text = $"Wave count: {SpawnerController.m_instance.WaveNumber}";
+        m_waveText.GetComponent<TextMeshProUGUI>().text = $"Wave count: {SpawnerController.instance.waveNumber}";
     }
 
     void OnRestartPressed()
     {
         gameObject.SetActive(false);
-        SpawnerController.m_instance.Restart();
-        player.Restart();
+        GameManager.instance.RestartPressed();
     }
 }
