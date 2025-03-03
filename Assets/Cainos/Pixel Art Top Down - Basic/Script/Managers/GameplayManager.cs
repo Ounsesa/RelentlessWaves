@@ -19,7 +19,6 @@ public class GameplayManager: MonoBehaviour
     #region References
     [Header("Players")]
     public TopDownCharacterController player;
-
     #endregion
 
     #region PlayerLimits

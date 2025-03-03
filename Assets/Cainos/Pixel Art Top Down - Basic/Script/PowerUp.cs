@@ -22,12 +22,15 @@ public enum PowerUpEnum
 [System.Serializable]
 public class PowerUpValues
 {
+    #region Variables
     public PowerUpEnum powerUpValue = PowerUpEnum.NewWeapon;
     public float powerUpAmount = 10;
     public float powerUpDuration = 5;
     public int powerUpCostUpgrade = 100;
     public float powerUpUpgradeAmount = 1;
     public float powerUpUpgradeDuration = 1;
+    #endregion
+
     public PowerUpValues() { }
     public PowerUpValues(PowerUpValues original)
     {
@@ -43,6 +46,7 @@ public class PowerUpValues
 
 public class PowerUp : MonoBehaviour
 {
+    [HideInInspector]
     public List<PowerUpValues> powerUpValuesList = new List<PowerUpValues>();
 
     public void Init(List<PowerUpValues> powerUpValues)
@@ -55,6 +59,7 @@ public class PowerUp : MonoBehaviour
         if(collision.gameObject.tag == "Player")
         {
             PowerUpController.instance.RegisterPowerUpPicked(this);
+            ActiveEntityController.instance.RemoveActivePowerUp(this);
             Destroy(gameObject);
         }
 

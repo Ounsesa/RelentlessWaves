@@ -6,16 +6,12 @@ using UnityEngine.UI;
 
 public class EndGameCanvas : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject m_diedText;
+    #region Variables
     [SerializeField]
     private GameObject m_restartButton;
     [SerializeField]
     private GameObject m_waveText;
-
-
-
-
+    #endregion
 
     void Awake()
     {

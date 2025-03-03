@@ -6,7 +6,7 @@ using UnityEngine.Windows;
 using static UnityEngine.InputSystem.DefaultInputActions;
 using static Utils;
 
-public class InputManager : Manager
+public class InputManager
 {
     private InputActions[] m_playerActions;
 

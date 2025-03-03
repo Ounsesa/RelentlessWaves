@@ -5,41 +5,43 @@ using UnityEngine.UI;
 
 public class MainMenuScript : MonoBehaviour
 {
+    #region Variables
     [SerializeField]
-    private List<GameObject> CanvasToHide;
+    private List<GameObject> m_canvasToHide;
     [SerializeField]
-    private List<GameObject> CanvasToShowOnPlay;
+    private List<GameObject> m_canvasToShowOnPlay;
     [SerializeField]
-    private List<GameObject> CanvasToShowOnExplanation;
+    private List<GameObject> m_canvasToShowOnExplanation;
 
     [SerializeField]
-    private Button PlayButton;
+    private Button m_playButton;
     [SerializeField]
-    private Button ExplanationButton;
+    private Button m_explanationButton;
     [SerializeField]
-    private Button ExitButton;
+    private Button m_exitButton;
+    #endregion
 
     private void Awake()
     {
-        PlayButton.onClick.AddListener(OnPlayButtonPressed);
-        ExplanationButton.onClick.AddListener(OnGuideButtonPressed);
-        ExitButton.onClick.AddListener(OnExitButtonPressed);
+        m_playButton.onClick.AddListener(OnPlayButtonPressed);
+        m_explanationButton.onClick.AddListener(OnGuideButtonPressed);
+        m_exitButton.onClick.AddListener(OnExitButtonPressed);
     }
 
     private void Start()
     {
-        GamePauseManager.PauseGame();
+        GameManager.instance.PauseGame();
     }
 
     private void OnPlayButtonPressed()
     {
-        GamePauseManager.ResumeGame();
+        GameManager.instance.ResumeGame();
         gameObject.SetActive(false);
-        foreach(GameObject go in CanvasToShowOnPlay)
+        foreach(GameObject go in m_canvasToShowOnPlay)
         {
             go.SetActive(true);
         }
-        foreach(GameObject go in CanvasToHide)
+        foreach(GameObject go in m_canvasToHide)
         {
             go.SetActive(false);
         }
@@ -52,7 +54,7 @@ public class MainMenuScript : MonoBehaviour
 
     private void OnGuideButtonPressed()
     {
-        foreach (GameObject go in CanvasToShowOnExplanation)
+        foreach (GameObject go in m_canvasToShowOnExplanation)
         {
             go.SetActive(!go.activeSelf);
         }

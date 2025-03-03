@@ -11,77 +11,74 @@ using UnityEngine.SocialPlatforms;
 
 public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 {
-    public Utils.Players m_playerID;
-    public PlayerInput[] m_playerInput;
-
-
-    private InputActions _input;
-    private Animator animator;
-
-    [SerializeField]
-    private HealthBar HealthBar;
-    [SerializeField]
-    private GameObject EndGameScreen;
-    [SerializeField]
-    private GameObject DamageScreen;
-    [SerializeField]
-    private GameObject WaveCanvas;
-
-    private Vector3 LastMousePosition;
-    private Vector3 LastGamePadPosition;
-
-    [SerializeField]
-    private StatsGrid statsGrid;
-
-    [SerializeField]
-    private string PlayerDataFileName = "PlayerData";
+    #region Variables
+    public Utils.Players playerID;
+    public GameObject mainMenuCanvas;
+    public GameObject bulletGameObject;
+    public GameObject weaponGO;
 
     [HideInInspector]
-    public GameObject m_interactObject;
+    public List<GameObject> weaponList;
+    [HideInInspector]
+    public int weaponNumber = 2;
 
-    public GameObject MainMenuCanvas;
+    [SerializeField]
+    private HealthBar m_healthBar;
+    [SerializeField]
+    private GameObject m_endGameScreen;
+    [SerializeField]
+    private GameObject m_damageScreen;
+    [SerializeField]
+    private GameObject m_waveCanvas;
+    [SerializeField]
+    private StatsGrid m_statsGrid;
+    [SerializeField]
+    private string m_playerDataFileName = "PlayerData";
+    private IObjectPool<Bullet> m_bulletPool;
+    private Vector3 m_lastMousePosition;
+    private Vector3 m_lastGamePadPosition;
+    private InputActions m_input;
+    private Animator m_animator;
 
-    public GameObject bulletGameObject;
 
-    private IObjectPool<Bullet> bulletPool;
-
-    private Vector2 lookingDirection = new Vector2(1, 0);
-
-    public GameObject WeaponGO;
-    public List<GameObject> WeaponList;
-    public int WeaponNumber = 2;
 
     #region PlayerStats
+    [HideInInspector]
     public float speed = 4;
-    public float ShootCadency = 1;
+    [HideInInspector]
+    public float shootCadency = 1;
+    [HideInInspector]
+    public int health = 20;
+
+    private bool m_canTakeDamage = true;
+    [SerializeField]
+    private float m_invulnerabilityTime = 1f;
 
     #endregion
 
-    public int health = 20;
 
-    private bool CanTakeDamage = true;
-    private float InvulnerabilityTime = 1f;
+    #endregion
 
     public void Restart()
     {
         transform.position = new Vector3(0,0,0);
         health = 20;
-        HealthBar.SetHealth(health);
+        m_healthBar.SetHealth(health);
     }
     public void LoadData(GameData data)
     {
-        health = data.PlayerHealth;
+        health = data.playerHealth;
         if(health <= 0)
         {
             health = 20;
             EndGame();
         }
 
-        HealthBar.SetHealth(health);
+        m_healthBar.SetHealth(health);
     }
     public void SaveData(ref GameData data)
     {
-        data.PlayerHealth = health;
+        data.playerHealth = health;
     }
 
     private void Start()
@@ -89,21 +86,18 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         GameManager.instance.onRestartPressed.AddListener(Restart);
         InitPlayer();
 
-        animator = GetComponent<Animator>();
+        m_animator = GetComponent<Animator>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
-        _input = GameplayManager.instance.inputManager.RegsiterInputActionsPlayer(playerInput, m_playerID);
+        m_input = GameplayManager.instance.inputManager.RegsiterInputActionsPlayer(playerInput, playerID);
 
 
-        bulletPool = new ObjectPool<Bullet>(InstantiateBullet, OnGet, OnRelease);
+        m_bulletPool = new ObjectPool<Bullet>(InstantiateBullet, OnGet, OnRelease);
 
         InitWeapons();
         BindDelegates();
 
-        statsGrid.InitGrid();
-
-
-        Invoke("StartShootCoroutine", ShootCadency);
+        Invoke("StartShootCoroutine", shootCadency);
     }
 
     private void OnDestroy()
@@ -116,7 +110,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         GameObject bulletGO = Instantiate(bulletGameObject);
         Bullet bullet = bulletGO.GetComponent<Bullet>();
-        bullet.SetPool(bulletPool);
+        bullet.SetPool(m_bulletPool);
         return bullet;
     }
 
@@ -124,16 +118,18 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         bullet.gameObject.SetActive(true);
         bullet.RespawnBullet(bulletGameObject.GetComponent<Bullet>());
+        ActiveEntityController.instance.AddActiveBullet(bullet);
     }
 
     private void OnRelease(Bullet bullet)
     {
         bullet.gameObject.SetActive(false);
+        ActiveEntityController.instance.RemoveActiveBullet(bullet);
     }
 
     private void InitPlayer()
     {
-        List<string[]> PlayerData = CSVParser.ParseCSVToStringList(PlayerDataFileName);
+        List<string[]> PlayerData = CSVParser.ParseCSVToStringList(m_playerDataFileName);
         PlayerData.RemoveAt(0);
         int index = 0;
         foreach (string[] PlayerDataLine in PlayerData)
@@ -142,43 +138,43 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
             switch (index)
             {
                 case 0:
-                    WeaponNumber = int.Parse(PlayerDataLine[1]);
+                    weaponNumber = int.Parse(PlayerDataLine[1]);
                     break;
                 case 1:
                     speed = float.Parse(PlayerDataLine[1]);
                     break;
                 case 2:
-                    ShootCadency = float.Parse(PlayerDataLine[1]);
+                    shootCadency = float.Parse(PlayerDataLine[1]);
                     break;
                 case 3:
-                    bulletGameObject.GetComponent<Bullet>().Damage = float.Parse(PlayerDataLine[1]);
+                    bulletGameObject.GetComponent<Bullet>().damage = float.Parse(PlayerDataLine[1]);
                     break;
                 case 4:
-                    bulletGameObject.GetComponent<Bullet>().DamageMultiplier = float.Parse(PlayerDataLine[1]);
+                    bulletGameObject.GetComponent<Bullet>().damageMultiplier = float.Parse(PlayerDataLine[1]);
                     break;
                 case 5:
-                    bulletGameObject.GetComponent<Bullet>().Range = float.Parse(PlayerDataLine[1]);
+                    bulletGameObject.GetComponent<Bullet>().range = float.Parse(PlayerDataLine[1]);
                     break;
                 case 6:
-                    bulletGameObject.GetComponent<Bullet>().Speed = float.Parse(PlayerDataLine[1]);
+                    bulletGameObject.GetComponent<Bullet>().speed = float.Parse(PlayerDataLine[1]);
                     break;
                 case 7:
-                    bulletGameObject.GetComponent<Bullet>().Size = float.Parse(PlayerDataLine[1]);
+                    bulletGameObject.GetComponent<Bullet>().size = float.Parse(PlayerDataLine[1]);
                     break;
                 case 8:
                     outInt = -1;
                     int.TryParse(PlayerDataLine[1], out outInt);
-                    bulletGameObject.GetComponent<Bullet>().Follower = outInt == 1 ? true : false;
+                    bulletGameObject.GetComponent<Bullet>().follower = outInt == 1 ? true : false;
                     break;
                 case 9:
                     outInt = -1;
                     int.TryParse(PlayerDataLine[1], out outInt);
-                    bulletGameObject.GetComponent<Bullet>().ExplodesOnHit = outInt == 1 ? true : false;
+                    bulletGameObject.GetComponent<Bullet>().explodesOnHit = outInt == 1 ? true : false;
                     break;
                 case 10:
                     outInt = -1;
                     int.TryParse(PlayerDataLine[1], out outInt);
-                    bulletGameObject.GetComponent<Bullet>().Piercing = outInt == 1 ? true : false;
+                    bulletGameObject.GetComponent<Bullet>().piercing = outInt == 1 ? true : false;
                     break;
                 case 11:
                     //health = int.Parse(PlayerDataLine[1]);
@@ -191,17 +187,17 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void BindDelegates()
     {
-        PowerUpController.instance.OnSpeedPicked += AddSpeed;
-        PowerUpController.instance.OnSizePicked += AddBulletSize;
-        PowerUpController.instance.OnExplosionPicked += SetExplosion;
-        PowerUpController.instance.OnFollowerPicked += SetFollower;
-        PowerUpController.instance.OnDamagePicked += AddDamage;
-        PowerUpController.instance.OnDamageMultiplierPicked += AddDamageMultiplier;
-        PowerUpController.instance.OnBulletSpeedPicked += AddBulletSpeed;
-        PowerUpController.instance.OnNewWeaponPicked += AddWeapon;
-        PowerUpController.instance.OnShootCadencyPicked += ReduceShootCadency;
-        PowerUpController.instance.OnPiercingPicked += SetPiercing;
-        PowerUpController.instance.OnRangePicked += AddRange;
+        PowerUpController.instance.onSpeedPicked += AddSpeed;
+        PowerUpController.instance.onSizePicked += AddBulletSize;
+        PowerUpController.instance.onExplosionPicked += SetExplosion;
+        PowerUpController.instance.onFollowerPicked += SetFollower;
+        PowerUpController.instance.onDamagePicked += AddDamage;
+        PowerUpController.instance.onDamageMultiplierPicked += AddDamageMultiplier;
+        PowerUpController.instance.onBulletSpeedPicked += AddBulletSpeed;
+        PowerUpController.instance.onNewWeaponPicked += AddWeapon;
+        PowerUpController.instance.onShootCadencyPicked += ReduceShootCadency;
+        PowerUpController.instance.onPiercingPicked += SetPiercing;
+        PowerUpController.instance.onRangePicked += AddRange;
     }
 
     private void StartShootCoroutine()
@@ -215,15 +211,15 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         {
             if(health > 0)
             {
-                for (int i = 0; i < WeaponNumber; i++)
+                for (int i = 0; i < weaponNumber; i++)
                 {
-                    Bullet bullet = bulletPool.Get();
-                    bullet.transform.position = WeaponList[i].transform.Find("Cannon").position;
-                    bullet.Direction = WeaponList[i].transform.right;
+                    Bullet bullet = m_bulletPool.Get();
+                    bullet.transform.position = weaponList[i].transform.Find("Cannon").position;
+                    bullet.direction = weaponList[i].transform.right;
 
                 }
             }
-            yield return new WaitForSeconds(ShootCadency);
+            yield return new WaitForSeconds(shootCadency);
         }
     }
 
@@ -238,17 +234,17 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Pause()
     {
-        if(_input.buttonPause.triggered && transform.position != Vector3.zero)
+        if(m_input.buttonPause.triggered && transform.position != Vector3.zero)
         {
-            if (MainMenuCanvas.activeSelf)
+            if (mainMenuCanvas.activeSelf)
             {
-                GamePauseManager.ResumeGame();
-                MainMenuCanvas.SetActive(false);
+                GameManager.instance.ResumeGame();
+                mainMenuCanvas.SetActive(false);
             }
             else
             {
-                GamePauseManager.PauseGame();
-                MainMenuCanvas.SetActive(true);
+                GameManager.instance.PauseGame();
+                mainMenuCanvas.SetActive(true);
             }
         }
 
@@ -260,14 +256,14 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         { return; }
 
         Vector3 DirectionToMouse = Vector3.zero;
-        Vector2 GamepadMovement = _input.buttonAimGamepad.ReadValue<Vector2>();
+        Vector2 GamepadMovement = m_input.buttonAimGamepad.ReadValue<Vector2>();
         if(GamepadMovement != Vector2.zero)
         {
             DirectionToMouse = GamepadMovement;
-            LastMousePosition = Input.mousePosition;
-            LastGamePadPosition = GamepadMovement;
+            m_lastMousePosition = Input.mousePosition;
+            m_lastGamePadPosition = GamepadMovement;
         }
-        else if(Input.mousePosition != LastMousePosition)
+        else if(Input.mousePosition != m_lastMousePosition)
         { 
             // Get the mouse position in world space
             Vector3 MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -280,7 +276,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         }
         else
         {
-            DirectionToMouse = LastGamePadPosition;
+            DirectionToMouse = m_lastGamePadPosition;
         }
 
         
@@ -289,12 +285,12 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
         float Angle = Mathf.Atan2(DirectionToMouse.y, DirectionToMouse.x) * Mathf.Rad2Deg;
 
         // Calculate the angle step for each weapon
-        float AngleStep = 360f / WeaponNumber;
+        float AngleStep = 360f / weaponNumber;
 
         // Define the radius of the circle (same as in the Start function)
         float radius = 0.3f;
 
-        for (int i = 0; i < WeaponNumber; i++)
+        for (int i = 0; i < weaponNumber; i++)
         {
             // Calculate the angle for this weapon, offset by the player's aim angle
             float WeaponAngle = Angle + AngleStep * i;
@@ -309,11 +305,11 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                 0);  // Z position remains zero since we're working in 2D
 
             // Set the weapon's world position relative to the player
-            WeaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
-            WeaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
+            weaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
+            weaponList[i].transform.position = transform.position + weaponPosition + Vector3.up * radius;
 
             // Rotate the weapon itself to face outward
-            WeaponList[i].transform.rotation = Quaternion.Euler(new Vector3(0, 0, WeaponAngle));
+            weaponList[i].transform.rotation = Quaternion.Euler(new Vector3(0, 0, WeaponAngle));
 
             // Flip the player and weapons based on the mouse's position
             if (Mathf.Abs(Angle) > 90)
@@ -322,7 +318,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                 transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
 
                 // Flip the weapon's sprite vertically
-                WeaponList[i].GetComponent<SpriteRenderer>().flipY = true;
+                weaponList[i].GetComponent<SpriteRenderer>().flipY = true;
             }
             else
             {
@@ -330,7 +326,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                 transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
 
                 // Reset the weapon's sprite flip
-                WeaponList[i].GetComponent<SpriteRenderer>().flipY = false;
+                weaponList[i].GetComponent<SpriteRenderer>().flipY = false;
             }
         }
     }
@@ -338,29 +334,30 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void Movement()
     {
-        Vector2 dir = _input.buttonMovementGamepad.ReadValue<Vector2>();
-        if (_input.buttonLeft.IsPressed())
+        if (health <= 0)
+        { return; }
+
+        Vector2 dir = m_input.buttonMovementGamepad.ReadValue<Vector2>();
+        if (m_input.buttonLeft.IsPressed())
         {
             dir.x = -1;
-            lookingDirection = new Vector2(-1, 0);
         }
-        else if (_input.buttonRight.IsPressed())
+        else if (m_input.buttonRight.IsPressed())
         {
             dir.x = 1;
-            lookingDirection = new Vector2(1, 0);
         }
 
-        if (_input.buttonUp.IsPressed())
+        if (m_input.buttonUp.IsPressed())
         {
             dir.y = 1;
         }
-        else if (_input.buttonDown.IsPressed())
+        else if (m_input.buttonDown.IsPressed())
         {
             dir.y = -1;
         }
 
         dir.Normalize();
-        animator.SetBool("IsMoving", dir.magnitude > 0);
+        m_animator.SetBool("IsMoving", dir.magnitude > 0);
 
         GetComponent<Rigidbody2D>().velocity = speed * dir;
 
@@ -371,11 +368,11 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     private void InitWeapons()
     {
 
-        WeaponGO.SetActive(true);
+        weaponGO.SetActive(true);
         float radius = 0.3f;  // Radius of the circle around the player
-        float AngleStep = 360f / WeaponNumber;  // Angle step for each weapon
+        float AngleStep = 360f / weaponNumber;  // Angle step for each weapon
 
-        for (int i = 0; i < WeaponNumber; i++)
+        for (int i = 0; i < weaponNumber; i++)
         {
             // Calculate the angle for this weapon
             float WeaponAngle = AngleStep * i;
@@ -390,26 +387,26 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                 0);  // Z position remains zero since we're rotating in 2D
 
             // Instantiate the weapon
-            GameObject NewWeapon = Instantiate(WeaponGO, transform);
+            GameObject NewWeapon = Instantiate(weaponGO, transform);
 
             // Set the position in world space, relative to the player's position
             NewWeapon.transform.position = transform.position + weaponPosition + Vector3.up * radius;
 
             // Add the new weapon to the list
-            WeaponList.Add(NewWeapon);
+            weaponList.Add(NewWeapon);
         }
 
         // Deactivate the original weapon object
-        WeaponGO.SetActive(false);
+        weaponGO.SetActive(false);
 
     }
 
     private void RelocateWeapons()
     {
         float radius = 0.3f;  // Radius of the circle around the player
-        float AngleStep = 360f / WeaponNumber;  // Angle step for each weapon
+        float AngleStep = 360f / weaponNumber;  // Angle step for each weapon
 
-        for (int i = 0; i < WeaponNumber; i++)
+        for (int i = 0; i < weaponNumber; i++)
         {
             // Calculate the angle for this weapon
             float WeaponAngle = AngleStep * i;
@@ -424,7 +421,7 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
                 0);  // Z position remains zero since we're rotating in 2D
 
             // Instantiate the weapon
-            GameObject Weapon = WeaponList[i];
+            GameObject Weapon = weaponList[i];
 
             // Set the position in world space, relative to the player's position
             Weapon.transform.position = transform.position + weaponPosition + Vector3.up * radius;
@@ -434,14 +431,14 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void TakeDamage(int damage)
     {
-        if(CanTakeDamage && health > 0)
+        if(m_canTakeDamage && health > 0)
         {
             health -= damage;
-            HealthBar.SetHealth(health);
-            CanTakeDamage = false;
-            DamageScreen.SetActive(true);
+            m_healthBar.SetHealth(health);
+            m_canTakeDamage = false;
+            m_damageScreen.SetActive(true);
             Invoke("RemoveDamageScreen", 0.25f);
-            Invoke("RemuveInvulnerability", InvulnerabilityTime);
+            Invoke("RemuveInvulnerability", m_invulnerabilityTime);
 
             if(health <= 0)
             {
@@ -452,18 +449,18 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
 
     private void RemoveDamageScreen()
     {
-        DamageScreen.SetActive(false);
+        m_damageScreen.SetActive(false);
     }
 
     private void EndGame()
     {
-        WaveCanvas.SetActive(false);
-        EndGameScreen.SetActive(true);
+        m_waveCanvas.SetActive(false);
+        m_endGameScreen.SetActive(true);
     }
 
     private void RemuveInvulnerability()
     {
-        CanTakeDamage = true;
+        m_canTakeDamage = true;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -487,25 +484,25 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {        
         if(Add)
         {
-            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
+            weaponNumber = Mathf.Clamp(weaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
 
-            WeaponGO.SetActive(true);
+            weaponGO.SetActive(true);
 
             for(int i = 0; i < weapons; i++)
             {
-                GameObject NewWeapon = Instantiate(WeaponGO, transform);
-                WeaponList.Add(NewWeapon);
+                GameObject NewWeapon = Instantiate(weaponGO, transform);
+                weaponList.Add(NewWeapon);
             }
 
-            WeaponGO.SetActive(false);
+            weaponGO.SetActive(false);
         }
         else 
         {
-            WeaponNumber = Mathf.Clamp(WeaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
+            weaponNumber = Mathf.Clamp(weaponNumber + weapons, 1, GameplayManager.instance.maxWeapons);
             for (int i =0; i< -weapons; i++)
             {
-                GameObject WeaponToRemove = WeaponList[0];
-                WeaponList.Remove(WeaponToRemove);
+                GameObject WeaponToRemove = weaponList[0];
+                weaponList.Remove(WeaponToRemove);
                 Destroy(WeaponToRemove);
             }
         }
@@ -522,47 +519,47 @@ public class TopDownCharacterController : MonoBehaviour, IDataPersistence
     {
         //If the shoot cadency is 0.1, it won't lower more, but it will register the up reset of the power up, so picking this power up in 0.1 is bad
 
-        ShootCadency = Mathf.Clamp(ShootCadency - amount, GameplayManager.instance.minShootCadency, 1);
+        shootCadency = Mathf.Clamp(shootCadency - amount, GameplayManager.instance.minShootCadency, 1);
     }
 
     public void AddDamage(float amount)
     {
-        bulletGameObject.GetComponent<Bullet>().Damage += amount;
+        bulletGameObject.GetComponent<Bullet>().damage += amount;
     }
 
     public void AddDamageMultiplier(float amount)
     {
-        bulletGameObject.GetComponent<Bullet>().DamageMultiplier += amount;
+        bulletGameObject.GetComponent<Bullet>().damageMultiplier += amount;
     }
 
     public void AddRange(float amount)
     {
-        bulletGameObject.GetComponent<Bullet>().Range += amount;
+        bulletGameObject.GetComponent<Bullet>().range += amount;
     }
 
     public void AddBulletSpeed(float amount)
     {
-        bulletGameObject.GetComponent<Bullet>().Speed += amount;
+        bulletGameObject.GetComponent<Bullet>().speed += amount;
     }
 
     public void AddBulletSize(float amount)
     {
-        bulletGameObject.GetComponent<Bullet>().Size += amount;
+        bulletGameObject.GetComponent<Bullet>().size += amount;
     }
 
     public void SetFollower(bool Follower)
     {
-        bulletGameObject.GetComponent<Bullet>().Follower = Follower;
+        bulletGameObject.GetComponent<Bullet>().follower = Follower;
     }
 
     public void SetExplosion(bool Explosion)
     {
-        bulletGameObject.GetComponent<Bullet>().ExplodesOnHit = Explosion;
+        bulletGameObject.GetComponent<Bullet>().explodesOnHit = Explosion;
     }
 
     public void SetPiercing(bool Piercing)
     {
-        bulletGameObject.GetComponent<Bullet>().Piercing = Piercing;
+        bulletGameObject.GetComponent<Bullet>().piercing = Piercing;
     }
 
 

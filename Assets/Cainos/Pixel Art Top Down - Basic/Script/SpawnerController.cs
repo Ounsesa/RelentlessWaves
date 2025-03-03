@@ -19,11 +19,13 @@ public enum EnemyTypes
 
 public class EnemyValues
 {
+    #region Variables
     public float health;
     public int damage;
     public float speed;
     public float dropChance;
     public int scoreOnDeath;
+    #endregion
 
     public EnemyValues(float health, int damage, float speed, float dropChance, int scoreOnDeath)
     {
@@ -100,29 +102,6 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     public void Restart()
     {
-        IEnumerable<EnemyController> dataPersistencesObjects = FindObjectsOfType<EnemyController>();
-        foreach(EnemyController enemy in  dataPersistencesObjects)
-        {
-            enemy.enemyPool?.Release(enemy);
-        }
-        IEnumerable<Bullet> bullets = FindObjectsOfType<Bullet>();
-        foreach(Bullet bullet in bullets)
-        {
-            try
-            {
-                bullet.BulletPool?.Release(bullet);
-            }
-            catch
-            {
-
-            }
-        }
-        IEnumerable<PowerUp> powers = FindObjectsOfType<PowerUp>();
-        foreach(PowerUp power in powers)
-        {
-            Destroy(power.gameObject);
-        }
-
         waveNumber = 1;
         m_enemiesPerWave = 6;
         foreach (GameObject go in m_canvasToShow)
@@ -133,7 +112,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         {
             go.SetActive(false);
         }
-        GamePauseManager.ResumeGame();
+        GameManager.instance.ResumeGame();
 
     }
 
@@ -166,14 +145,14 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
     public void LoadData(GameData data)
     {
-        waveNumber = data.WaveNumber;
-        score = data.Score;
+        waveNumber = data.waveNumber;
+        score = data.score;
         m_scoreText.AddScore(score);
     }
     public void SaveData(ref GameData data)
     {
-        data.WaveNumber = waveNumber;
-        data.Score = score;
+        data.waveNumber = waveNumber;
+        data.score = score;
     }
 
     public void StartNewWave()
@@ -188,7 +167,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         Debug.Log(m_currentSpawnTime);
 
         isWaveActive = true;
-        GamePauseManager.ResumeGame();
+        GameManager.instance.ResumeGame();
     }
 
 
@@ -235,6 +214,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
         Debug.Log(spawnPosition);
         enemy.transform.position = spawnPosition;
         enemy.Respawn();
+        ActiveEntityController.instance.AddActiveEnemy(enemy);
         m_enemiesSpawned++;
     }
 
@@ -297,6 +277,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
 
         m_enemiesRemaining--;
         m_enemiesRemainingText.GetComponent<TextMeshProUGUI>().text = m_enemiesRemaining.ToString();
+        ActiveEntityController.instance.RemoveActiveEnemy(enemy);
 
         if (m_enemiesRemaining <= 0)
         {
@@ -315,7 +296,7 @@ public class SpawnerController : MonoBehaviour, IDataPersistence
             {
                 m_enemiesPerWave = 10;
             }
-            GamePauseManager.PauseGame();
+            GameManager.instance.PauseGame();
         }
     }
 

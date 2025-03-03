@@ -5,32 +5,34 @@ using UnityEngine.UI;
 
 public class HealthBar : MonoBehaviour
 {
+    #region Variables
+    [SerializeField]
+    private List<GameObject> m_heartImages = new List<GameObject>();
 
     [SerializeField]
-    List<GameObject> HeartImages = new List<GameObject>();
-
-    [SerializeField]
-    List<Sprite> HeartSprites = new List<Sprite>();
+    [Tooltip("In order from full -> half -> empty")]
+    private List<Sprite> m_heartSprites = new List<Sprite>();
+    #endregion
 
     public void SetHealth(int health)
     {
         int NumberOfFullHearths = health / 2;
-        bool hasHalfHearth = health % 2 != 0 && health > 0;
+        bool HasHalfHearth = health % 2 != 0 && health > 0;
 
-        for (int i = 0; i < HeartImages.Count; i++)
+        for (int i = 0; i < m_heartImages.Count; i++)
         {
             if (i < NumberOfFullHearths)
             {
-                HeartImages[i].GetComponent<Image>().sprite = HeartSprites[0];
+                m_heartImages[i].GetComponent<Image>().sprite = m_heartSprites[0];
             }
-            else if (hasHalfHearth)
+            else if (HasHalfHearth)
             {
-                hasHalfHearth = false;
-                HeartImages[i].GetComponent<Image>().sprite = HeartSprites[1];
+                HasHalfHearth = false;
+                m_heartImages[i].GetComponent<Image>().sprite = m_heartSprites[1];
             }
             else
             {
-                HeartImages[i].GetComponent<Image>().sprite = HeartSprites[2];
+                m_heartImages[i].GetComponent<Image>().sprite = m_heartSprites[2];
             }
         }
     }

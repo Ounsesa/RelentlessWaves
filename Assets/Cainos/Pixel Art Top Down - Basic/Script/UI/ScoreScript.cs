@@ -6,8 +6,11 @@ using UnityEngine.UI;
 
 public class ScoreScript : MonoBehaviour
 {
-    public TextMeshProUGUI scoreText;  // Reference to the Text component displaying the score
+    #region Variables
+    [SerializeField]
+    private TextMeshProUGUI m_scoreText;  // Reference to the Text component displaying the score
     private int m_score = 0;   // Initial score
+    #endregion
 
     void Start()
     {
@@ -23,6 +26,6 @@ public class ScoreScript : MonoBehaviour
     void UpdateScoreText()
     {
         // Convert the score to a string, padded with leading zeros, with a total length of 11
-        scoreText.text = m_score.ToString().PadLeft(11, '0');
+        m_scoreText.text = m_score.ToString().PadLeft(11, '0');
     }
 }

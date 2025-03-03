@@ -17,17 +17,17 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
 
 
     #region Delegates
-    public event System.Action<float> OnSpeedPicked;
-    public event System.Action<float> OnDamagePicked;
-    public event System.Action<float> OnDamageMultiplierPicked;
-    public event System.Action<float> OnRangePicked;
-    public event System.Action<float> OnSizePicked;
-    public event System.Action<float> OnShootCadencyPicked;
-    public event System.Action<float> OnBulletSpeedPicked;
-    public event System.Action<bool, int> OnNewWeaponPicked;
-    public event System.Action<bool> OnFollowerPicked;
-    public event System.Action<bool> OnPiercingPicked;
-    public event System.Action<bool> OnExplosionPicked;
+    public event System.Action<float> onSpeedPicked;
+    public event System.Action<float> onDamagePicked;
+    public event System.Action<float> onDamageMultiplierPicked;
+    public event System.Action<float> onRangePicked;
+    public event System.Action<float> onSizePicked;
+    public event System.Action<float> onShootCadencyPicked;
+    public event System.Action<float> onBulletSpeedPicked;
+    public event System.Action<bool, int> onNewWeaponPicked;
+    public event System.Action<bool> onFollowerPicked;
+    public event System.Action<bool> onPiercingPicked;
+    public event System.Action<bool> onExplosionPicked;
     #endregion
 
     void Awake()
@@ -53,18 +53,19 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
         {
             m_powerUpValuesData = data.powerUpValuesList;
         }
-        numberOfValues = data.NumberOfPowerUpValues;
+        numberOfValues = data.numberOfPowerUpValues;
     }
     public void SaveData(ref GameData data)
     {
         data.powerUpValuesList = m_powerUpValuesData;
-        data.NumberOfPowerUpValues = numberOfValues;
+        data.numberOfPowerUpValues = numberOfValues;
     }
 
     public void SpawnPowerUp(Vector3 position)
     {
         GameObject InstantiatedPowerUp = Instantiate(powerUpGO, position, Quaternion.identity);
-        Destroy(InstantiatedPowerUp, 15f);
+
+        StartCoroutine(DelayedFunction(15, RemovePowerUp, InstantiatedPowerUp));
 
         List<PowerUpValues> valuesForThisPowerUp = new List<PowerUpValues>();
 
@@ -76,7 +77,16 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
         }
 
         InstantiatedPowerUp.GetComponent<PowerUp>().Init(valuesForThisPowerUp);
+        ActiveEntityController.instance.AddActivePowerUp(InstantiatedPowerUp.GetComponent<PowerUp>());
     }
+
+    private void RemovePowerUp(GameObject powerUp)
+    {
+        if (powerUp == null) return;
+        ActiveEntityController.instance.RemoveActivePowerUp(powerUp.GetComponent<PowerUp>());
+        Destroy(powerUp);
+    }
+
 
     public void RegisterPowerUpPicked(PowerUp powerUp)
     {
@@ -92,37 +102,37 @@ public class PowerUpController : MonoBehaviour, IDataPersistence
         switch (powerUpValues.powerUpValue)
         {
             case PowerUpEnum.NewWeapon:
-                OnNewWeaponPicked?.Invoke(powerUpValues.powerUpAmount > 0, (int)powerUpValues.powerUpAmount);
+                onNewWeaponPicked?.Invoke(powerUpValues.powerUpAmount > 0, (int)powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Speed:
-                OnSpeedPicked?.Invoke(powerUpValues.powerUpAmount);
+                onSpeedPicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.ShootCadency:
-                OnShootCadencyPicked?.Invoke(powerUpValues.powerUpAmount);
+                onShootCadencyPicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Damage:
-                OnDamagePicked?.Invoke(powerUpValues.powerUpAmount);
+                onDamagePicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.DamageMultiplier:
-                OnDamageMultiplierPicked?.Invoke(powerUpValues.powerUpAmount);
+                onDamageMultiplierPicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Range:
-                OnRangePicked?.Invoke(powerUpValues.powerUpAmount);
+                onRangePicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.BulletSpeed:
-                OnBulletSpeedPicked?.Invoke(powerUpValues.powerUpAmount);
+                onBulletSpeedPicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Size:
-                OnSizePicked?.Invoke(powerUpValues.powerUpAmount);
+                onSizePicked?.Invoke(powerUpValues.powerUpAmount);
                 break;
             case PowerUpEnum.Follower:
-                OnFollowerPicked?.Invoke(powerUpValues.powerUpAmount > 0);
+                onFollowerPicked?.Invoke(powerUpValues.powerUpAmount > 0);
                 break;
             case PowerUpEnum.Explodes:
-                OnExplosionPicked?.Invoke(powerUpValues.powerUpAmount > 0);
+                onExplosionPicked?.Invoke(powerUpValues.powerUpAmount > 0);
                 break;
             case PowerUpEnum.Piercing:
-                OnPiercingPicked?.Invoke(powerUpValues.powerUpAmount > 0);
+                onPiercingPicked?.Invoke(powerUpValues.powerUpAmount > 0);
                 break;
             default:
                 Debug.LogWarning("Unknown power-up type: " + powerUpValues.powerUpValue);

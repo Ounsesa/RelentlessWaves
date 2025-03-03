@@ -8,12 +8,10 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    #region Managers
+    #region Variables
     public static GameManager instance;
     public UnityEvent onRestartPressed;
     #endregion
-
-
 
     void Awake()
     {
@@ -29,6 +27,15 @@ public class GameManager : MonoBehaviour
     public void RestartPressed()
     {
         onRestartPressed.Invoke();
+    }
+    public void ResumeGame()
+    {
+        Time.timeScale = 1f;
+    }
+
+    public void PauseGame()
+    {
+        Time.timeScale = 0f;
     }
 
 }

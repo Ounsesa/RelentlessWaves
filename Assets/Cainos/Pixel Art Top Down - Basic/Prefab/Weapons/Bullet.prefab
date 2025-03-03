@@ -120,20 +120,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350795adab3b91e40a7db8c243bf2671, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Direction: {x: 0, y: 0}
-  Damage: 5
-  DamageMultiplier: 1
-  Range: 5
-  Speed: 10
-  Size: 1
-  Piercing: 0
-  HitTrigger: {fileID: 3340141887037882767}
-  Follower: 0
-  FollowerSizeDetection: 2
-  FollowerTrigger: {fileID: 8577844823371130731}
-  ExplosionTrigger: {fileID: 7740197255939830646}
-  ExplodesOnHit: 0
-  ExplosionCircle: {fileID: 3189809243756940561}
+  direction: {x: 0, y: 0}
+  damage: 5
+  damageMultiplier: 1
+  range: 5
+  speed: 10
+  size: 1
+  piercing: 0
+  m_hitTrigger: {fileID: 3340141887037882767}
+  follower: 0
+  m_followerSizeDetection: 2
+  m_followerTrigger: {fileID: 8577844823371130731}
+  explodesOnHit: 0
+  m_explosionTrigger: {fileID: 7740197255939830646}
+  m_explosionCircle: {fileID: 3189809243756940561}
 --- !u!1 &3189809243756940561
 GameObject:
   m_ObjectHideFlags: 0

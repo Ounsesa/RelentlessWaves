@@ -55,7 +55,7 @@ public class DataPersistenceManager : MonoBehaviour
             persistence.LoadData(m_gameData);
         }
 
-        bonusCost = m_gameData.BonusCost;
+        bonusCost = m_gameData.bonusCost;
     }
 
     public void SaveGame()
@@ -65,7 +65,7 @@ public class DataPersistenceManager : MonoBehaviour
             persistence.SaveData(ref m_gameData);
         }
 
-        m_gameData.BonusCost = bonusCost;
+        m_gameData.bonusCost = bonusCost;
         m_fileDataHandler.Save(m_gameData);
     }
 

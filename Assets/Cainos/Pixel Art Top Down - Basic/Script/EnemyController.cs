@@ -22,10 +22,6 @@ public class EnemyController : MonoBehaviour
     private Animator m_animator;
     private BoxCollider2D m_boxCollider;
     private bool m_dead = false;
-
-
-
-
     #endregion
 
     public void SetPool(IObjectPool<EnemyController> pool) {  enemyPool = pool; }

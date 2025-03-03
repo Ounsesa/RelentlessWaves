@@ -7,19 +7,21 @@ using UnityEngine.UI;
 public class IncreaseBonusAmount : MonoBehaviour
 {
     #region Variables
-    public GameObject bonusAmountButton;
-    public GameObject costText;
+    [SerializeField] 
+    private GameObject m_bonusAmountButton;
+    [SerializeField]
+    private GameObject m_costText;
     #endregion
 
     private void Awake()
     {
-        bonusAmountButton.GetComponent<Button>().onClick.AddListener(OnBonusAmountButtonPressed);
+        m_bonusAmountButton.GetComponent<Button>().onClick.AddListener(OnBonusAmountButtonPressed);
     }
 
     private void Start()
     {
-        costText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.bonusCost.ToString();
-        bonusAmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpController.instance.numberOfValues.ToString();
+        m_costText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.bonusCost.ToString();
+        m_bonusAmountButton.GetComponentInChildren<TextMeshProUGUI>().text = PowerUpController.instance.numberOfValues.ToString();
     }
 
     private void OnBonusAmountButtonPressed()
@@ -29,7 +31,7 @@ public class IncreaseBonusAmount : MonoBehaviour
             return;
         }
         int NumberOfValues = ++PowerUpController.instance.numberOfValues;
-        bonusAmountButton.GetComponentInChildren<TextMeshProUGUI>().text = NumberOfValues.ToString();
+        m_bonusAmountButton.GetComponentInChildren<TextMeshProUGUI>().text = NumberOfValues.ToString();
     }
 
     private bool ManageCosts()
@@ -40,7 +42,7 @@ public class IncreaseBonusAmount : MonoBehaviour
         }
         SpawnerController.instance.SpendScore(DataPersistenceManager.instance.bonusCost);
         DataPersistenceManager.instance.bonusCost *= 10;
-        costText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.bonusCost.ToString();
+        m_costText.GetComponent<TextMeshProUGUI>().text = DataPersistenceManager.instance.bonusCost.ToString();
 
         return true;
     }
